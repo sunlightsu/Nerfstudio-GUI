@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nerfstudio GUI</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="header">
+  <h1>🧊 Nerfstudio GUI</h1>
+  <nav class="tabs">
+    <button class="tab active" data-tab="step1">📷 图像预处理</button>
+    <button class="tab" data-tab="step2">🚂 训练</button>
+    <button class="tab" data-tab="step3">📦 导出</button>
+  </nav>
+</header>
+
+<main class="panels">
+  <section id="panel-step1" class="panel active">
+    {% include 'steps/step1_process.html' %}
+  </section>
+  <section id="panel-step2" class="panel">
+    {% include 'steps/step2_train.html' %}
+  </section>
+  <section id="panel-step3" class="panel">
+    {% include 'steps/step3_export.html' %}
+  </section>
+</main>
+
+<section class="terminal-section">
+  {% include 'terminal.html' %}
+</section>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

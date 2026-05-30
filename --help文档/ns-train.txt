@@ -1,0 +1,689 @@
+(nerfstudio) E:\CODE>ns-train --help
+usage: ns-train [-h]
+                {depth-nerfacto,dnerf,generfacto,instant-ngp,instant-ngp-bounded,mipnerf,nerfacto,nerfacto-big,nerfacto-huge,neus,neus
+-facto,phototourism,semantic-nerfw,splatfacto,splatfacto-big,splatfacto-mcmc,tensorf,vanilla-nerf,BioNeRF,feature-splatting,igs2gs,in2
+n,in2n-small,in2n-tiny,kplanes,kplanes-dynamic,lerf,lerf-big,lerf-lite,livescene,nerfgs,nerfplayer-nerfacto,nerfplayer-ngp,nerfsh,pyne
+rf,pynerf-occupancy-grid,pynerf-synthetic,seathru-nerf,seathru-nerf-lite,signerf,signerf_nerfacto,splatfacto-w,tetra-nerf,tetra-nerf-o
+riginal,volinga,zipnerf}
+
+Train a radiance field with nerfstudio. For real captures, we recommend using the nerfacto model.
+
+Nerfstudio allows for customizing your training and eval configs from the CLI in a powerful way, but there are some things to
+understand.
+
+The most demonstrative and helpful example of the CLI structure is the difference in output between the following commands:
+
+    ns-train -h
+    ns-train nerfacto -h nerfstudio-data
+    ns-train nerfacto nerfstudio-data -h
+
+In each of these examples, the -h applies to the previous subcommand (ns-train, nerfacto, and nerfstudio-data).
+
+In the first example, we get the help menu for the ns-train script. In the second example, we get the help menu for the nerfacto
+model. In the third example, we get the help menu for the nerfstudio-data dataparser.
+
+With our scripts, your arguments will apply to the preceding subcommand in your command, and thus where you put your arguments
+matters! Any optional arguments you discover from running
+
+    ns-train nerfacto -h nerfstudio-data
+
+need to come directly after the nerfacto subcommand, since these optional arguments only belong to the nerfacto subcommand:
+
+    ns-train nerfacto {nerfacto optional args} nerfstudio-data
+
+╭─ options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ -h, --help        show this help message and exit                                                                                  │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ subcommands ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ {depth-nerfacto,dnerf,generfacto,instant-ngp,instant-ngp-bounded,mipnerf,nerfacto,nerfacto-big,nerfacto-huge,neus,neus-facto,photo │
+│ tourism,semantic-nerfw,splatfacto,splatfacto-big,splatfacto-mcmc,tensorf,vanilla-nerf,BioNeRF,feature-splatting,igs2gs,in2n,in2n-s │
+│ mall,in2n-tiny,kplanes,kplanes-dynamic,lerf,lerf-big,lerf-lite,livescene,nerfgs,nerfplayer-nerfacto,nerfplayer-ngp,nerfsh,pynerf,p │
+│ ynerf-occupancy-grid,pynerf-synthetic,seathru-nerf,seathru-nerf-lite,signerf,signerf_nerfacto,splatfacto-w,tetra-nerf,tetra-nerf-o │
+│ riginal,volinga,zipnerf}                                                                                                           │
+│     depth-nerfacto                                                                                                                 │
+│                   Nerfacto with depth supervision.                                                                                 │
+│     dnerf         Dynamic-NeRF model. (slow)                                                                                       │
+│     generfacto    Generative Text to NeRF model                                                                                    │
+│     instant-ngp   Implementation of Instant-NGP. Recommended real-time model for unbounded scenes.                                 │
+│     instant-ngp-bounded                                                                                                            │
+│                   Implementation of Instant-NGP. Recommended for bounded real and synthetic scenes                                 │
+│     mipnerf       High quality model for bounded scenes. (slow)                                                                    │
+│     nerfacto      Recommended real-time model tuned for real captures. This model will be continually updated.                     │
+│     nerfacto-big                                                                                                                   │
+│     nerfacto-huge                                                                                                                  │
+│                   Larger version of Nerfacto with higher quality.                                                                  │
+│     neus          Implementation of NeuS. (slow)                                                                                   │
+│     neus-facto    Implementation of NeuS-Facto. (slow)                                                                             │
+│     phototourism  Uses the Phototourism data.                                                                                      │
+│     semantic-nerfw                                                                                                                 │
+│                   Predicts semantic segmentations and filters out transient objects.                                               │
+│     splatfacto    Gaussian Splatting model                                                                                         │
+│     splatfacto-big                                                                                                                 │
+│                   Larger version of Splatfacto with higher quality.                                                                │
+│     splatfacto-mcmc                                                                                                                │
+│     tensorf       tensorf                                                                                                          │
+│     vanilla-nerf  Original NeRF model. (slow)                                                                                      │
+│     BioNeRF       [External, run 'ns-train BioNeRF' to install] BioNeRF. Nerfstudio implementation                                 │
+│     feature-splatting                                                                                                              │
+│                   [External, run 'ns-train feature-splatting' to install] Feature Splatting with MaskCLIP ViT-L/14@336px, DINOv2   │
+│                   ViT-S/14, and MobileSAMv2                                                                                        │
+│     igs2gs        [External, run 'ns-train igs2gs' to install] Instruct-GS2GS. Full model, used in paper                           │
+│     in2n          [External, run 'ns-train in2n' to install] Instruct-NeRF2NeRF. Full model, used in paper                         │
+│     in2n-small    [External, run 'ns-train in2n-small' to install] Instruct-NeRF2NeRF. Half precision model                        │
+│     in2n-tiny     [External, run 'ns-train in2n-tiny' to install] Instruct-NeRF2NeRF. Half prevision with no LPIPS                 │
+│     kplanes       [External, run 'ns-train kplanes' to install] K-Planes model tuned to static blender scenes                      │
+│     kplanes-dynamic                                                                                                                │
+│                   [External, run 'ns-train kplanes-dynamic' to install] K-Planes model tuned to dynamic DNeRF scenes               │
+│     lerf          [External, run 'ns-train lerf' to install] LERF with OpenCLIP ViT-B/16, used in paper                            │
+│     lerf-big      [External, run 'ns-train lerf-big' to install] LERF with OpenCLIP ViT-L/14                                       │
+│     lerf-lite     [External, run 'ns-train lerf-lite' to install] LERF with smaller network and less LERF samples                  │
+│     livescene     [External, run 'ns-train livescene' to install] LiveScene with OpenCLIP ViT-B/16, used in paper                  │
+│     nerfgs        [External, run 'ns-train nerfgs' to install] NeRFGS, used in paper                                               │
+│     nerfplayer-nerfacto                                                                                                            │
+│                   [External, run 'ns-train nerfplayer-nerfacto' to install] NeRFPlayer with nerfacto backbone                      │
+│     nerfplayer-ngp                                                                                                                 │
+│                   [External, run 'ns-train nerfplayer-ngp' to install] NeRFPlayer with instang-ngp-bounded backbone                │
+│     nerfsh        [External, run 'ns-train nerfsh' to install] NeRF-SH, used in paper                                              │
+│     pynerf        [External, run 'ns-train pynerf' to install] PyNeRF with proposal network. The default parameters are suited for │
+│                   outdoor scenes.                                                                                                  │
+│     pynerf-occupancy-grid                                                                                                          │
+│                   [External, run 'ns-train pynerf-occupancy-grid' to install] PyNeRF with occupancy grid. The default parameters   │
+│                   are suited for synthetic scenes.                                                                                 │
+│     pynerf-synthetic                                                                                                               │
+│                   [External, run 'ns-train pynerf-synthetic' to install] PyNeRF with proposal network. The default parameters are  │
+│                   suited for synthetic scenes.                                                                                     │
+│     seathru-nerf  [External, run 'ns-train seathru-nerf' to install] SeaThru-NeRF for underwater scenes.                           │
+│     seathru-nerf-lite                                                                                                              │
+│                   [External, run 'ns-train seathru-nerf-lite' to install] SeaThru-NeRF for underwater scenes (smaller networks and │
+│                   batches).                                                                                                        │
+│     signerf       [External, run 'ns-train signerf' to install] SIGNeRF method (high quality) used in paper                        │
+│     signerf_nerfacto                                                                                                               │
+│                   [External, run 'ns-train signerf_nerfacto' to install] SIGNeRF method combined with Nerfacto (faster training    │
+│                   less quality)                                                                                                    │
+│     splatfacto-w  [External, run 'ns-train splatfacto-w' to install] Splatfacto in the wild                                        │
+│     tetra-nerf    [External, run 'ns-train tetra-nerf' to install] Tetra-NeRF. Different sampler - faster and better               │
+│     tetra-nerf-original                                                                                                            │
+│                   [External, run 'ns-train tetra-nerf-original' to install] Tetra-NeRF. Official implementation from the paper     │
+│     volinga       [External, run 'ns-train volinga' to install] Real-time rendering model from Volinga. Directly exportable to     │
+│                   NVOL format at https://volinga.ai/                                                                               │
+│     zipnerf       [External, run 'ns-train zipnerf' to install] A pytorch implementation of 'Zip-NeRF: Anti-Aliased Grid-Based     │
+│                   Neural Radiance Fields'                                                                                          │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+
+(nerfstudio) E:\CODE>ns-train nerfacto -h
+usage: ns-train nerfacto [-h] [NERFACTO OPTIONS]
+                         [{nerfstudio-data,minimal-parser,arkit-data,blender-data,instant-ngp-data,nuscenes-data,dnerf-data,phototouri
+sm-data,dycheck-data,scannet-data,sdfstudio-data,nerfosr-data,sitcoms3d-data,scannetpp-data,colmap}]
+Recommended real-time model tuned for real captures. This model will be continually updated.
+╭─ options ──────────────────────────────────────────────────────╮ ╭─ machine options ──────────────────────────────────────────────╮
+│ -h, --help                                                     │ │ Machine configuration                                          │
+│     show this help message and exit                            │ │ ────────────────────────────────────────────────────────────── │
+│ --output-dir PATH                                              │ │ --machine.seed INT                                             │
+│     relative or absolute output directory to save all          │ │     random seed initialization (default: 42)                   │
+│     checkpoints and logging (default: outputs)                 │ │ --machine.num-devices INT                                      │
+│ --method-name {None}|STR                                       │ │     total number of devices (e.g., gpus) available for         │
+│     Method name. Required to set in python or via cli          │ │     train/eval (default: 1)                                    │
+│     (default: nerfacto)                                        │ │ --machine.num-machines INT                                     │
+│ --experiment-name {None}|STR                                   │ │     total number of distributed machines available (for DDP)   │
+│     Experiment name. If None, will automatically be set to     │ │     (default: 1)                                               │
+│     dataset name (default: None)                               │ │ --machine.machine-rank INT                                     │
+│ --project-name {None}|STR                                      │ │     current machine's rank (for DDP) (default: 0)              │
+│     Project name. (default: nerfstudio-project)                │ │ --machine.dist-url STR                                         │
+│ --timestamp STR                                                │ │     distributed connection point (for DDP) (default: auto)     │
+│     Experiment timestamp. (default: '{timestamp}')             │ │ --machine.device-type {cpu,cuda,mps}                           │
+│ --vis                                                          │ │     device type to use for training (default: cuda)            │
+│ {viewer,wandb,tensorboard,comet,viewer+wandb,viewer+tensorboar │ ╰────────────────────────────────────────────────────────────────╯
+│ d,viewer+comet,viewer_legacy}                                  │ ╭─ logging options ──────────────────────────────────────────────╮
+│     Which visualizer to use. (default: viewer)                 │ │ Logging configuration                                          │
+│ --data {None}|PATH                                             │ │ ────────────────────────────────────────────────────────────── │
+│     Alias for --pipeline.datamanager.data (default: None)      │ │ --logging.relative-log-dir PATH                                │
+│ --prompt {None}|STR                                            │ │     relative path to save all logged events (default: .)       │
+│     Alias for --pipeline.model.prompt (default: None)          │ │ --logging.steps-per-log INT                                    │
+│ --relative-model-dir PATH                                      │ │     number of steps between logging stats (default: 10)        │
+│     Relative path to save all checkpoints. (default:           │ │ --logging.max-buffer-size INT                                  │
+│     nerfstudio_models)                                         │ │     maximum history size to keep for computing running         │
+│ --load-scheduler {True,False}                                  │ │     averages of stats.                                         │
+│     Whether to load the scheduler state_dict to resume         │ │     e.g. if 20, averages will be computed over past 20         │
+│     training, if it exists. (default: True)                    │ │     occurrences. (default: 20)                                 │
+│ --steps-per-save INT                                           │ │ --logging.profiler {none,basic,pytorch}                        │
+│     Number of steps between saves. (default: 2000)             │ │     how to profile the code;                                   │
+│ --steps-per-eval-batch INT                                     │ │     "basic" - prints speed of all decorated functions at the   │
+│     Number of steps between randomly sampled batches of rays.  │ │     end of a program.                                          │
+│     (default: 500)                                             │ │     "pytorch" - same as basic, but it also traces few training │
+│ --steps-per-eval-image INT                                     │ │     steps. (default: basic)                                    │
+│     Number of steps between single eval images. (default: 500) │ ╰────────────────────────────────────────────────────────────────╯
+│ --steps-per-eval-all-images INT                                │ ╭─ logging.local-writer options ─────────────────────────────────╮
+│     Number of steps between eval all images. (default: 25000)  │ │ if provided, will print stats locally. if None, will disable   │
+│ --max-num-iterations INT                                       │ │ printing                                                       │
+│     Maximum number of iterations to run. (default: 30000)      │ │ ────────────────────────────────────────────────────────────── │
+│ --mixed-precision {True,False}                                 │ │ --logging.local-writer.enable {True,False}                     │
+│     Whether or not to use mixed precision for training.        │ │     if True enables local logging, else disables (default:     │
+│     (default: True)                                            │ │     True)                                                      │
+│ --use-grad-scaler {True,False}                                 │ │ --logging.local-writer.stats-to-track                          │
+│     Use gradient scaler even if the automatic mixed precision  │ │ [{ITER_TRAIN_TIME,TOTAL_TRAIN_TIME,ETA,TRAIN_RAYS_PER_SEC,TEST │
+│     is disabled. (default: False)                              │ │ _RAYS_PER_SEC,VIS_RAYS_PER_SEC,CURR_TEST_PSNR} [...]]          │
+│ --save-only-latest-checkpoint {True,False}                     │ │     specifies which stats will be logged/printed to terminal   │
+│     Whether to only save the latest checkpoint or all          │ │     (default: ITER_TRAIN_TIME TRAIN_RAYS_PER_SEC               │
+│     checkpoints. (default: True)                               │ │     CURR_TEST_PSNR VIS_RAYS_PER_SEC TEST_RAYS_PER_SEC ETA)     │
+│ --load-dir {None}|PATH                                         │ │ --logging.local-writer.max-log-size INT                        │
+│     Optionally specify a pre-trained model directory to load   │ │     maximum number of rows to print before wrapping. if 0,     │
+│     from. (default: None)                                      │ │     will print everything. (default: 10)                       │
+│ --load-step {None}|INT                                         │ ╰────────────────────────────────────────────────────────────────╯
+│     Optionally specify model step to load from; if none, will  │ ╭─ viewer options ───────────────────────────────────────────────╮
+│     find most recent model in load_dir. (default: None)        │ │ Viewer configuration                                           │
+│ --load-config {None}|PATH                                      │ │ ────────────────────────────────────────────────────────────── │
+│     Path to config YAML file. (default: None)                  │ │ --viewer.relative-log-filename STR                             │
+│ --load-checkpoint {None}|PATH                                  │ │     Filename to use for the log file. (default:                │
+│     Path to checkpoint file. (default: None)                   │ │     viewer_log_filename.txt)                                   │
+│ --log-gradients {True,False}                                   │ │ --viewer.websocket-port {None}|INT                             │
+│     Optionally log gradients during training (default: False)  │ │     The websocket port to connect to. If None, find an         │
+│ --gradient-accumulation-steps [STR INT [STR INT ...]]          │ │     available port. (default: None)                            │
+│     Number of steps to accumulate gradients over. Contains a   │ │ --viewer.websocket-port-default INT                            │
+│     mapping of {param_group:num} (default: )                   │ │     The default websocket port to connect to if websocket_port │
+│ --start-paused {True,False}                                    │ │     is not specified (default: 7007)                           │
+│     Whether to start the training in a paused state. (default: │ │ --viewer.websocket-host STR                                    │
+│     False)                                                     │ │     The host address to bind the websocket server to.          │
+╰────────────────────────────────────────────────────────────────╯ │     (default: 0.0.0.0)                                         │
+╭─ pipeline.datamanager options ─────────────────────────────────╮ │ --viewer.num-rays-per-chunk INT                                │
+│ specifies the datamanager config                               │ │     number of rays per chunk to render with viewer (default:   │
+│ ────────────────────────────────────────────────────────────── │ │     32768)                                                     │
+│ --pipeline.datamanager.data {None}|PATH                        │ │ --viewer.max-num-display-images INT                            │
+│     Source of data, may not be used by all models. (default:   │ │     Maximum number of training images to display in the        │
+│     None)                                                      │ │     viewer, to avoid lag. This does not change which images    │
+│ --pipeline.datamanager.masks-on-gpu {True,False}               │ │     are                                                        │
+│     Process masks on GPU for speed at the expense of memory,   │ │     actually used in training/evaluation. If -1, display all.  │
+│     if True. (default: False)                                  │ │     (default: 512)                                             │
+│ --pipeline.datamanager.images-on-gpu {True,False}              │ │ --viewer.quit-on-train-completion {True,False}                 │
+│     Process images on GPU for speed at the expense of memory,  │ │     Whether to kill the training job when it has completed.    │
+│     if True. (default: False)                                  │ │     Note this will stop rendering in the viewer. (default:     │
+│ --pipeline.datamanager.cache-images-type {uint8,float32}       │ │     False)                                                     │
+│     The image type returned from manager, caching images in    │ │ --viewer.image-format {jpeg,png}                               │
+│     uint8 saves memory (default: float32)                      │ │     Image format viewer should use; jpeg is lossy compression, │
+│ --pipeline.datamanager.train-num-rays-per-batch INT            │ │     while png is lossless. (default: jpeg)                     │
+│     Number of rays per batch to use per training iteration.    │ │ --viewer.jpeg-quality INT                                      │
+│     (default: 4096)                                            │ │     Quality tradeoff to use for jpeg compression. (default:    │
+│ --pipeline.datamanager.train-num-images-to-sample-from         │ │     75)                                                        │
+│ INT|FLOAT                                                      │ │ --viewer.make-share-url {True,False}                           │
+│     Number of images to load into CPU RAM to generate          │ │     Viewer beta feature: print a shareable URL. This flag is   │
+│     RayBundles from during training. If infinity, load         │ │     ignored in the legacy version of the viewer. (default:     │
+│     all images into CPU RAM to generate RayBundles. (default:  │ │     False)                                                     │
+│     inf)                                                       │ │ --viewer.camera-frustum-scale FLOAT                            │
+│ --pipeline.datamanager.train-num-times-to-repeat-images        │ │     Scale for the camera frustums in the viewer. (default:     │
+│ INT|FLOAT                                                      │ │     0.1)                                                       │
+│     Number of RayBundles to generate for a batch of images     │ │ --viewer.default-composite-depth {True,False}                  │
+│     loaded into CPU RAM before sampling new images.            │ │     The default value for compositing depth. Turn off if you   │
+│     If infinity, never sample new images. Note: decreasing     │ │     want to see the camera frustums without occlusions.        │
+│     train_num_images_to_sample_from and increasing             │ │     (default: True)                                            │
+│     train_num_times_to_repeat_images alleviates CPU            │ ╰────────────────────────────────────────────────────────────────╯
+│     bottleneck. (default: inf)                                 │ ╭─ pipeline.datamanager.pixel-sampler options ───────────────────╮
+│ --pipeline.datamanager.eval-num-rays-per-batch INT             │ │ Specifies the pixel sampler used to sample pixels from images. │
+│     Number of rays per batch to use per eval iteration.        │ │ ────────────────────────────────────────────────────────────── │
+│     (default: 4096)                                            │ │ --pipeline.datamanager.pixel-sampler.num-rays-per-batch INT    │
+│ --pipeline.datamanager.eval-num-images-to-sample-from          │ │     Number of rays to sample per batch. (default: 4096)        │
+│ INT|FLOAT                                                      │ │ --pipeline.datamanager.pixel-sampler.keep-full-image           │
+│     Number of images to sample during eval iteration.          │ │ {True,False}                                                   │
+│     (default: inf)                                             │ │     Whether or not to include a reference to the full image in │
+│ --pipeline.datamanager.eval-num-times-to-repeat-images         │ │     returned batch. (default: False)                           │
+│ INT|FLOAT                                                      │ │ --pipeline.datamanager.pixel-sampler.is-equirectangular        │
+│     When not evaluating on all images, number of iterations    │ │ {True,False}                                                   │
+│     before picking                                             │ │     List of whether or not camera i is equirectangular.        │
+│     new images. If -1, never pick new images. (default: inf)   │ │     (default: False)                                           │
+│ --pipeline.datamanager.eval-image-indices {None}|{[INT [INT    │ │ --pipeline.datamanager.pixel-sampler.ignore-mask {True,False}  │
+│ ...]]}                                                         │ │     Whether to ignore the masks when sampling. (default:       │
+│     Specifies the image indices to use during eval; if None,   │ │     False)                                                     │
+│     uses all. (default: 0)                                     │ │ --pipeline.datamanager.pixel-sampler.fisheye-crop-radius       │
+│ --pipeline.datamanager.camera-res-scale-factor FLOAT           │ │ {None}|FLOAT                                                   │
+│     The scale factor for scaling spatial data such as images,  │ │     Set to the radius (in pixels) for fisheye cameras.         │
+│     mask, semantics                                            │ │     (default: None)                                            │
+│     along with relevant information about camera intrinsics    │ │ --pipeline.datamanager.pixel-sampler.rejection-sample-mask     │
+│     (default: 1.0)                                             │ │ {True,False}                                                   │
+│ --pipeline.datamanager.patch-size INT                          │ │     Whether or not to use rejection sampling when sampling     │
+│     Size of patch to sample from. If > 1, patch-based sampling │ │     images with masks (default: True)                          │
+│     will be used. (default: 1)                                 │ │ --pipeline.datamanager.pixel-sampler.max-num-iterations INT    │
+│ --pipeline.datamanager.load-from-disk {True,False}             │ │     If rejection sampling masks, the maximum number of times   │
+│     If True, conserves RAM memory by loading images from disk. │ │     to sample (default: 100)                                   │
+│     If False, caches all the images as tensors to RAM and      │ ╰────────────────────────────────────────────────────────────────╯
+│     loads from RAM. (default: False)                           │ ╭─ pipeline.model options ───────────────────────────────────────╮
+│ --pipeline.datamanager.dataloader-num-workers INT              │ │ specifies the model config                                     │
+│     The number of workers performing the dataloading from      │ │ ────────────────────────────────────────────────────────────── │
+│     either disk/RAM, which                                     │ │ --pipeline.model.enable-collider {True,False}                  │
+│     includes collating, pixel sampling, unprojecting, ray      │ │     Whether to create a scene collider to filter rays.         │
+│     generation etc. (default: 4)                               │ │     (default: True)                                            │
+│ --pipeline.datamanager.prefetch-factor {None}|INT              │ │ --pipeline.model.collider-params {None}|{[STR FLOAT [STR FLOAT │
+│     The limit number of batches a worker will start loading    │ │ ...]]}                                                         │
+│     once an iterator is created.                               │ │     parameters to instantiate scene collider with (default:    │
+│     More details are described here:                           │ │     near_plane 2.0 far_plane 6.0)                              │
+│     https://pytorch.org/docs/stable/data.html#torch.utils.data │ │ --pipeline.model.eval-num-rays-per-chunk INT                   │
+│     .DataLoader (default: 10)                                  │ │     specifies number of rays per chunk during eval (default:   │
+│ --pipeline.datamanager.cache-compressed-images {True,False}    │ │     32768)                                                     │
+│     If True, cache raw image files as byte strings to RAM.     │ │ --pipeline.model.prompt {None}|STR                             │
+│     (default: False)                                           │ │     A prompt to be used in text to NeRF models (default: None) │
+╰────────────────────────────────────────────────────────────────╯ │ --pipeline.model.near-plane FLOAT                              │
+╭─ pipeline.model.loss-coefficients options ─────────────────────╮ │     How far along the ray to start sampling. (default: 0.05)   │
+│ parameters to instantiate density field with                   │ │ --pipeline.model.far-plane FLOAT                               │
+│ ────────────────────────────────────────────────────────────── │ │     How far along the ray to stop sampling. (default: 1000.0)  │
+│ --pipeline.model.loss-coefficients.rgb-loss-coarse FLOAT       │ │ --pipeline.model.background-color                              │
+│     (default: 1.0)                                             │ │ {random,last_sample,black,white}                               │
+│ --pipeline.model.loss-coefficients.rgb-loss-fine FLOAT         │ │     Whether to randomize the background color. (default:       │
+│     (default: 1.0)                                             │ │     last_sample)                                               │
+╰────────────────────────────────────────────────────────────────╯ │ --pipeline.model.hidden-dim INT                                │
+╭─ pipeline.model.proposal-net-args-list.0 options ──────────────╮ │     Dimension of hidden layers (default: 64)                   │
+│ --pipeline.model.proposal-net-args-list.0.hidden-dim INT       │ │ --pipeline.model.hidden-dim-color INT                          │
+│     (default: 16)                                              │ │     Dimension of hidden layers for color network (default: 64) │
+│ --pipeline.model.proposal-net-args-list.0.log2-hashmap-size    │ │ --pipeline.model.hidden-dim-transient INT                      │
+│ INT                                                            │ │     Dimension of hidden layers for transient network (default: │
+│     (default: 17)                                              │ │     64)                                                        │
+│ --pipeline.model.proposal-net-args-list.0.num-levels INT       │ │ --pipeline.model.num-levels INT                                │
+│     (default: 5)                                               │ │     Number of levels of the hashmap for the base mlp.          │
+│ --pipeline.model.proposal-net-args-list.0.max-res INT          │ │     (default: 16)                                              │
+│     (default: 128)                                             │ │ --pipeline.model.base-res INT                                  │
+│ --pipeline.model.proposal-net-args-list.0.use-linear           │ │     Resolution of the base grid for the hashgrid. (default:    │
+│ {True,False}                                                   │ │     16)                                                        │
+│     (default: False)                                           │ │ --pipeline.model.max-res INT                                   │
+╰────────────────────────────────────────────────────────────────╯ │     Maximum resolution of the hashmap for the base mlp.        │
+╭─ pipeline.model.proposal-net-args-list.1 options ──────────────╮ │     (default: 2048)                                            │
+│ --pipeline.model.proposal-net-args-list.1.hidden-dim INT       │ │ --pipeline.model.log2-hashmap-size INT                         │
+│     (default: 16)                                              │ │     Size of the hashmap for the base mlp (default: 19)         │
+│ --pipeline.model.proposal-net-args-list.1.log2-hashmap-size    │ │ --pipeline.model.features-per-level INT                        │
+│ INT                                                            │ │     How many hashgrid features per level (default: 2)          │
+│     (default: 17)                                              │ │ --pipeline.model.num-proposal-samples-per-ray [INT [INT ...]]  │
+│ --pipeline.model.proposal-net-args-list.1.num-levels INT       │ │     Number of samples per ray for each proposal network.       │
+│     (default: 5)                                               │ │     (default: 256 96)                                          │
+│ --pipeline.model.proposal-net-args-list.1.max-res INT          │ │ --pipeline.model.num-nerf-samples-per-ray INT                  │
+│     (default: 256)                                             │ │     Number of samples per ray for the nerf network. (default:  │
+│ --pipeline.model.proposal-net-args-list.1.use-linear           │ │     48)                                                        │
+│ {True,False}                                                   │ │ --pipeline.model.proposal-update-every INT                     │
+│     (default: False)                                           │ │     Sample every n steps after the warmup (default: 5)         │
+╰────────────────────────────────────────────────────────────────╯ │ --pipeline.model.proposal-warmup INT                           │
+╭─ pipeline.model.camera-optimizer options ──────────────────────╮ │     Scales n from 1 to proposal_update_every over this many    │
+│ Config of the camera optimizer to use                          │ │     steps (default: 5000)                                      │
+│ ────────────────────────────────────────────────────────────── │ │ --pipeline.model.num-proposal-iterations INT                   │
+│ --pipeline.model.camera-optimizer.mode {off,SO3xR3,SE3}        │ │     Number of proposal network iterations. (default: 2)        │
+│     Pose optimization strategy to use. If enabled, we          │ │ --pipeline.model.use-same-proposal-network {True,False}        │
+│     recommend SO3xR3. (default: SO3xR3)                        │ │     Use the same proposal network. Otherwise use different     │
+│ --pipeline.model.camera-optimizer.trans-l2-penalty FLOAT       │ │     ones. (default: False)                                     │
+│     L2 penalty on translation parameters. (default: 0.01)      │ │ --pipeline.model.proposal-initial-sampler {piecewise,uniform}  │
+│ --pipeline.model.camera-optimizer.rot-l2-penalty FLOAT         │ │     Initial sampler for the proposal network. Piecewise is     │
+│     L2 penalty on rotation parameters. (default: 0.001)        │ │     preferred for unbounded scenes. (default: piecewise)       │
+╰────────────────────────────────────────────────────────────────╯ │ --pipeline.model.interlevel-loss-mult FLOAT                    │
+╭─ optimizers.proposal-networks.optimizer options ───────────────╮ │     Proposal loss multiplier. (default: 1.0)                   │
+│ Basic optimizer config with Adam                               │ │ --pipeline.model.distortion-loss-mult FLOAT                    │
+│ ────────────────────────────────────────────────────────────── │ │     Distortion loss multiplier. (default: 0.002)               │
+│ --optimizers.proposal-networks.optimizer.lr FLOAT              │ │ --pipeline.model.orientation-loss-mult FLOAT                   │
+│     The learning rate to use. (default: 0.01)                  │ │     Orientation loss multiplier on computed normals. (default: │
+│ --optimizers.proposal-networks.optimizer.eps FLOAT             │ │     0.0001)                                                    │
+│     The epsilon value to use. (default: 1e-15)                 │ │ --pipeline.model.pred-normal-loss-mult FLOAT                   │
+│ --optimizers.proposal-networks.optimizer.max-norm {None}|FLOAT │ │     Predicted normal loss multiplier. (default: 0.001)         │
+│     The max norm to use for gradient clipping. (default: None) │ │ --pipeline.model.use-proposal-weight-anneal {True,False}       │
+│ --optimizers.proposal-networks.optimizer.weight-decay FLOAT    │ │     Whether to use proposal weight annealing. (default: True)  │
+│     The weight decay to use. (default: 0)                      │ │ --pipeline.model.use-appearance-embedding {True,False}         │
+╰────────────────────────────────────────────────────────────────╯ │     Whether to use an appearance embedding. (default: True)    │
+╭─ optimizers.proposal-networks.scheduler options ───────────────╮ │ --pipeline.model.use-average-appearance-embedding {True,False} │
+│ Config for exponential decay scheduler with warmup             │ │     Whether to use average appearance embedding or zeros for   │
+│ ────────────────────────────────────────────────────────────── │ │     inference. (default: True)                                 │
+│ --optimizers.proposal-networks.scheduler.lr-pre-warmup FLOAT   │ │ --pipeline.model.proposal-weights-anneal-slope FLOAT           │
+│     Learning rate before warmup. (default: 1e-08)              │ │     Slope of the annealing function for the proposal weights.  │
+│ --optimizers.proposal-networks.scheduler.lr-final {None}|FLOAT │ │     (default: 10.0)                                            │
+│     Final learning rate. If not provided, it will be set to    │ │ --pipeline.model.proposal-weights-anneal-max-num-iters INT     │
+│     the optimizers learning rate. (default: 0.0001)            │ │     Max num iterations for the annealing function. (default:   │
+│ --optimizers.proposal-networks.scheduler.warmup-steps INT      │ │     1000)                                                      │
+│     Number of warmup steps. (default: 0)                       │ │ --pipeline.model.use-single-jitter {True,False}                │
+│ --optimizers.proposal-networks.scheduler.max-steps INT         │ │     Whether use single jitter or not for the proposal          │
+│     The maximum number of steps. (default: 200000)             │ │     networks. (default: True)                                  │
+│ --optimizers.proposal-networks.scheduler.ramp {linear,cosine}  │ │ --pipeline.model.predict-normals {True,False}                  │
+│     The ramp function to use during the warmup. (default:      │ │     Whether to predict normals or not. (default: False)        │
+│     cosine)                                                    │ │ --pipeline.model.disable-scene-contraction {True,False}        │
+╰────────────────────────────────────────────────────────────────╯ │     Whether to disable scene contraction or not. (default:     │
+╭─ optimizers.fields.optimizer options ──────────────────────────╮ │     False)                                                     │
+│ Basic optimizer config with Adam                               │ │ --pipeline.model.use-gradient-scaling {True,False}             │
+│ ────────────────────────────────────────────────────────────── │ │     Use gradient scaler where the gradients are lower for      │
+│ --optimizers.fields.optimizer.lr FLOAT                         │ │     points closer to the camera. (default: False)              │
+│     The learning rate to use. (default: 0.01)                  │ │ --pipeline.model.implementation {tcnn,torch}                   │
+│ --optimizers.fields.optimizer.eps FLOAT                        │ │     Which implementation to use for the model. (default: tcnn) │
+│     The epsilon value to use. (default: 1e-15)                 │ │ --pipeline.model.appearance-embed-dim INT                      │
+│ --optimizers.fields.optimizer.max-norm {None}|FLOAT            │ │     Dimension of the appearance embedding. (default: 32)       │
+│     The max norm to use for gradient clipping. (default: None) │ │ --pipeline.model.average-init-density FLOAT                    │
+│ --optimizers.fields.optimizer.weight-decay FLOAT               │ │     Average initial density output from MLP. (default: 0.01)   │
+│     The weight decay to use. (default: 0)                      │ ╰────────────────────────────────────────────────────────────────╯
+╰────────────────────────────────────────────────────────────────╯ ╭─ optimizers.fields.scheduler options ──────────────────────────╮
+╭─ optimizers.camera-opt.optimizer options ──────────────────────╮ │ Config for exponential decay scheduler with warmup             │
+│ Basic optimizer config with Adam                               │ │ ────────────────────────────────────────────────────────────── │
+│ ────────────────────────────────────────────────────────────── │ │ --optimizers.fields.scheduler.lr-pre-warmup FLOAT              │
+│ --optimizers.camera-opt.optimizer.lr FLOAT                     │ │     Learning rate before warmup. (default: 1e-08)              │
+│     The learning rate to use. (default: 0.001)                 │ │ --optimizers.fields.scheduler.lr-final {None}|FLOAT            │
+│ --optimizers.camera-opt.optimizer.eps FLOAT                    │ │     Final learning rate. If not provided, it will be set to    │
+│     The epsilon value to use. (default: 1e-15)                 │ │     the optimizers learning rate. (default: 0.0001)            │
+│ --optimizers.camera-opt.optimizer.max-norm {None}|FLOAT        │ │ --optimizers.fields.scheduler.warmup-steps INT                 │
+│     The max norm to use for gradient clipping. (default: None) │ │     Number of warmup steps. (default: 0)                       │
+│ --optimizers.camera-opt.optimizer.weight-decay FLOAT           │ │ --optimizers.fields.scheduler.max-steps INT                    │
+│     The weight decay to use. (default: 0)                      │ │     The maximum number of steps. (default: 200000)             │
+╰────────────────────────────────────────────────────────────────╯ │ --optimizers.fields.scheduler.ramp {linear,cosine}             │
+╭─ optimizers.camera-opt.scheduler options ──────────────────────╮ │     The ramp function to use during the warmup. (default:      │
+│ Config for exponential decay scheduler with warmup             │ │     cosine)                                                    │
+│ ────────────────────────────────────────────────────────────── │ ╰────────────────────────────────────────────────────────────────╯
+│ --optimizers.camera-opt.scheduler.lr-pre-warmup FLOAT          │ ╭─ optional subcommands ─────────────────────────────────────────╮
+│     Learning rate before warmup. (default: 1e-08)              │ │ Specifies the dataparser used to unpack the data. (default:    │
+│ --optimizers.camera-opt.scheduler.lr-final {None}|FLOAT        │ │ nerfstudio-data)                                               │
+│     Final learning rate. If not provided, it will be set to    │ │ ────────────────────────────────────────────────────────────── │
+│     the optimizers learning rate. (default: 0.0001)            │ │ [{nerfstudio-data,minimal-parser,arkit-data,blender-data,insta │
+│ --optimizers.camera-opt.scheduler.warmup-steps INT             │ │ nt-ngp-data,nuscenes-data,dnerf-data,phototourism-data,dycheck │
+│     Number of warmup steps. (default: 0)                       │ │ -data,scannet-data,sdfstudio-data,nerfosr-data,sitcoms3d-data, │
+│ --optimizers.camera-opt.scheduler.max-steps INT                │ │ scannetpp-data,colmap}]                                        │
+│     The maximum number of steps. (default: 5000)               │ │     nerfstudio-data                                            │
+│ --optimizers.camera-opt.scheduler.ramp {linear,cosine}         │ │     minimal-parser                                             │
+│     The ramp function to use during the warmup. (default:      │ │     arkit-data                                                 │
+│     cosine)                                                    │ │     blender-data                                               │
+╰────────────────────────────────────────────────────────────────╯ │     instant-ngp-data                                           │
+                                                                   │     nuscenes-data                                              │
+                                                                   │     dnerf-data                                                 │
+                                                                   │     phototourism-data                                          │
+                                                                   │     dycheck-data                                               │
+                                                                   │     scannet-data                                               │
+                                                                   │     sdfstudio-data                                             │
+                                                                   │     nerfosr-data                                               │
+                                                                   │     sitcoms3d-data                                             │
+                                                                   │     scannetpp-data                                             │
+                                                                   │     colmap                                                     │
+                                                                   ╰────────────────────────────────────────────────────────────────╯
+
+
+(nerfstudio) E:\CODE>ns-train splatfacto -h
+usage: ns-train splatfacto [-h] [SPLATFACTO OPTIONS]
+                           [{nerfstudio-data,minimal-parser,arkit-data,blender-data,instant-ngp-data,nuscenes-data,dnerf-data,phototou
+rism-data,dycheck-data,scannet-data,sdfstudio-data,nerfosr-data,sitcoms3d-data,scannetpp-data,colmap}]
+Gaussian Splatting model
+╭─ options ──────────────────────────────────────────────────────╮ ╭─ machine options ──────────────────────────────────────────────╮
+│ -h, --help                                                     │ │ Machine configuration                                          │
+│     show this help message and exit                            │ │ ────────────────────────────────────────────────────────────── │
+│ --output-dir PATH                                              │ │ --machine.seed INT                                             │
+│     relative or absolute output directory to save all          │ │     random seed initialization (default: 42)                   │
+│     checkpoints and logging (default: outputs)                 │ │ --machine.num-devices INT                                      │
+│ --method-name {None}|STR                                       │ │     total number of devices (e.g., gpus) available for         │
+│     Method name. Required to set in python or via cli          │ │     train/eval (default: 1)                                    │
+│     (default: splatfacto)                                      │ │ --machine.num-machines INT                                     │
+│ --experiment-name {None}|STR                                   │ │     total number of distributed machines available (for DDP)   │
+│     Experiment name. If None, will automatically be set to     │ │     (default: 1)                                               │
+│     dataset name (default: None)                               │ │ --machine.machine-rank INT                                     │
+│ --project-name {None}|STR                                      │ │     current machine's rank (for DDP) (default: 0)              │
+│     Project name. (default: nerfstudio-project)                │ │ --machine.dist-url STR                                         │
+│ --timestamp STR                                                │ │     distributed connection point (for DDP) (default: auto)     │
+│     Experiment timestamp. (default: '{timestamp}')             │ │ --machine.device-type {cpu,cuda,mps}                           │
+│ --vis                                                          │ │     device type to use for training (default: cuda)            │
+│ {viewer,wandb,tensorboard,comet,viewer+wandb,viewer+tensorboar │ ╰────────────────────────────────────────────────────────────────╯
+│ d,viewer+comet,viewer_legacy}                                  │ ╭─ logging options ──────────────────────────────────────────────╮
+│     Which visualizer to use. (default: viewer)                 │ │ Logging configuration                                          │
+│ --data {None}|PATH                                             │ │ ────────────────────────────────────────────────────────────── │
+│     Alias for --pipeline.datamanager.data (default: None)      │ │ --logging.relative-log-dir PATH                                │
+│ --prompt {None}|STR                                            │ │     relative path to save all logged events (default: .)       │
+│     Alias for --pipeline.model.prompt (default: None)          │ │ --logging.steps-per-log INT                                    │
+│ --relative-model-dir PATH                                      │ │     number of steps between logging stats (default: 10)        │
+│     Relative path to save all checkpoints. (default:           │ │ --logging.max-buffer-size INT                                  │
+│     nerfstudio_models)                                         │ │     maximum history size to keep for computing running         │
+│ --load-scheduler {True,False}                                  │ │     averages of stats.                                         │
+│     Whether to load the scheduler state_dict to resume         │ │     e.g. if 20, averages will be computed over past 20         │
+│     training, if it exists. (default: True)                    │ │     occurrences. (default: 20)                                 │
+│ --steps-per-save INT                                           │ │ --logging.profiler {none,basic,pytorch}                        │
+│     Number of steps between saves. (default: 2000)             │ │     how to profile the code;                                   │
+│ --steps-per-eval-batch INT                                     │ │     "basic" - prints speed of all decorated functions at the   │
+│     Number of steps between randomly sampled batches of rays.  │ │     end of a program.                                          │
+│     (default: 0)                                               │ │     "pytorch" - same as basic, but it also traces few training │
+│ --steps-per-eval-image INT                                     │ │     steps. (default: basic)                                    │
+│     Number of steps between single eval images. (default: 100) │ ╰────────────────────────────────────────────────────────────────╯
+│ --steps-per-eval-all-images INT                                │ ╭─ logging.local-writer options ─────────────────────────────────╮
+│     Number of steps between eval all images. (default: 1000)   │ │ if provided, will print stats locally. if None, will disable   │
+│ --max-num-iterations INT                                       │ │ printing                                                       │
+│     Maximum number of iterations to run. (default: 30000)      │ │ ────────────────────────────────────────────────────────────── │
+│ --mixed-precision {True,False}                                 │ │ --logging.local-writer.enable {True,False}                     │
+│     Whether or not to use mixed precision for training.        │ │     if True enables local logging, else disables (default:     │
+│     (default: False)                                           │ │     True)                                                      │
+│ --use-grad-scaler {True,False}                                 │ │ --logging.local-writer.stats-to-track                          │
+│     Use gradient scaler even if the automatic mixed precision  │ │ [{ITER_TRAIN_TIME,TOTAL_TRAIN_TIME,ETA,TRAIN_RAYS_PER_SEC,TEST │
+│     is disabled. (default: False)                              │ │ _RAYS_PER_SEC,VIS_RAYS_PER_SEC,CURR_TEST_PSNR} [...]]          │
+│ --save-only-latest-checkpoint {True,False}                     │ │     specifies which stats will be logged/printed to terminal   │
+│     Whether to only save the latest checkpoint or all          │ │     (default: ITER_TRAIN_TIME TRAIN_RAYS_PER_SEC               │
+│     checkpoints. (default: True)                               │ │     CURR_TEST_PSNR VIS_RAYS_PER_SEC TEST_RAYS_PER_SEC ETA)     │
+│ --load-dir {None}|PATH                                         │ │ --logging.local-writer.max-log-size INT                        │
+│     Optionally specify a pre-trained model directory to load   │ │     maximum number of rows to print before wrapping. if 0,     │
+│     from. (default: None)                                      │ │     will print everything. (default: 10)                       │
+│ --load-step {None}|INT                                         │ ╰────────────────────────────────────────────────────────────────╯
+│     Optionally specify model step to load from; if none, will  │ ╭─ viewer options ───────────────────────────────────────────────╮
+│     find most recent model in load_dir. (default: None)        │ │ Viewer configuration                                           │
+│ --load-config {None}|PATH                                      │ │ ────────────────────────────────────────────────────────────── │
+│     Path to config YAML file. (default: None)                  │ │ --viewer.relative-log-filename STR                             │
+│ --load-checkpoint {None}|PATH                                  │ │     Filename to use for the log file. (default:                │
+│     Path to checkpoint file. (default: None)                   │ │     viewer_log_filename.txt)                                   │
+│ --log-gradients {True,False}                                   │ │ --viewer.websocket-port {None}|INT                             │
+│     Optionally log gradients during training (default: False)  │ │     The websocket port to connect to. If None, find an         │
+│ --gradient-accumulation-steps [STR INT [STR INT ...]]          │ │     available port. (default: None)                            │
+│     Number of steps to accumulate gradients over. Contains a   │ │ --viewer.websocket-port-default INT                            │
+│     mapping of {param_group:num} (default: )                   │ │     The default websocket port to connect to if websocket_port │
+│ --start-paused {True,False}                                    │ │     is not specified (default: 7007)                           │
+│     Whether to start the training in a paused state. (default: │ │ --viewer.websocket-host STR                                    │
+│     False)                                                     │ │     The host address to bind the websocket server to.          │
+╰────────────────────────────────────────────────────────────────╯ │     (default: 0.0.0.0)                                         │
+╭─ pipeline.datamanager options ─────────────────────────────────╮ │ --viewer.num-rays-per-chunk INT                                │
+│ specifies the datamanager config                               │ │     number of rays per chunk to render with viewer (default:   │
+│ ────────────────────────────────────────────────────────────── │ │     32768)                                                     │
+│ --pipeline.datamanager.data {None}|PATH                        │ │ --viewer.max-num-display-images INT                            │
+│     Source of data, may not be used by all models. (default:   │ │     Maximum number of training images to display in the        │
+│     None)                                                      │ │     viewer, to avoid lag. This does not change which images    │
+│ --pipeline.datamanager.masks-on-gpu {True,False}               │ │     are                                                        │
+│     Process masks on GPU for speed at the expense of memory,   │ │     actually used in training/evaluation. If -1, display all.  │
+│     if True. (default: False)                                  │ │     (default: 512)                                             │
+│ --pipeline.datamanager.images-on-gpu {True,False}              │ │ --viewer.quit-on-train-completion {True,False}                 │
+│     Process images on GPU for speed at the expense of memory,  │ │     Whether to kill the training job when it has completed.    │
+│     if True. (default: False)                                  │ │     Note this will stop rendering in the viewer. (default:     │
+│ --pipeline.datamanager.camera-res-scale-factor FLOAT           │ │     False)                                                     │
+│     The scale factor for scaling spatial data such as images,  │ │ --viewer.image-format {jpeg,png}                               │
+│     mask, semantics                                            │ │     Image format viewer should use; jpeg is lossy compression, │
+│     along with relevant information about camera intrinsics    │ │     while png is lossless. (default: jpeg)                     │
+│     (default: 1.0)                                             │ │ --viewer.jpeg-quality INT                                      │
+│ --pipeline.datamanager.eval-num-images-to-sample-from INT      │ │     Quality tradeoff to use for jpeg compression. (default:    │
+│     Number of images to sample during eval iteration.          │ │     75)                                                        │
+│     (default: -1)                                              │ │ --viewer.make-share-url {True,False}                           │
+│ --pipeline.datamanager.eval-num-times-to-repeat-images INT     │ │     Viewer beta feature: print a shareable URL. This flag is   │
+│     When not evaluating on all images, number of iterations    │ │     ignored in the legacy version of the viewer. (default:     │
+│     before picking                                             │ │     False)                                                     │
+│     new images. If -1, never pick new images. (default: -1)    │ │ --viewer.camera-frustum-scale FLOAT                            │
+│ --pipeline.datamanager.cache-images {cpu,gpu,disk}             │ │     Scale for the camera frustums in the viewer. (default:     │
+│     Where to cache images in memory.                           │ │     0.1)                                                       │
+│     - If "cpu", caches images on cpu RAM as pytorch tensors.   │ │ --viewer.default-composite-depth {True,False}                  │
+│     - If "gpu", caches images on device as pytorch tensors.    │ │     The default value for compositing depth. Turn off if you   │
+│     - If "disk", keeps images on disk which conserves memory.  │ │     want to see the camera frustums without occlusions.        │
+│     Datamanager will use parallel dataloader (default: gpu)    │ │     (default: True)                                            │
+│ --pipeline.datamanager.cache-images-type {uint8,float32}       │ ╰────────────────────────────────────────────────────────────────╯
+│     The image type returned from manager, caching images in    │ ╭─ pipeline.model options ───────────────────────────────────────╮
+│     uint8 saves memory (default: uint8)                        │ │ specifies the model config                                     │
+│ --pipeline.datamanager.max-thread-workers {None}|INT           │ │ ────────────────────────────────────────────────────────────── │
+│     The maximum number of threads to use for caching images.   │ │ --pipeline.model.enable-collider {True,False}                  │
+│     If None, uses all available threads. (default: None)       │ │     Whether to create a scene collider to filter rays.         │
+│ --pipeline.datamanager.train-cameras-sampling-strategy         │ │     (default: True)                                            │
+│ {random,fps}                                                   │ │ --pipeline.model.collider-params {None}|{[STR FLOAT [STR FLOAT │
+│     Specifies which sampling strategy is used to generate      │ │ ...]]}                                                         │
+│     train cameras, 'random' means sampling                     │ │     parameters to instantiate scene collider with (default:    │
+│     uniformly random without replacement, 'fps' means farthest │ │     near_plane 2.0 far_plane 6.0)                              │
+│     point sampling which is helpful to reduce the artifacts    │ │ --pipeline.model.eval-num-rays-per-chunk INT                   │
+│     due to oversampling subsets of cameras that are very close │ │     specifies number of rays per chunk during eval (default:   │
+│     to each other. (default: random)                           │ │     4096)                                                      │
+│ --pipeline.datamanager.train-cameras-sampling-seed INT         │ │ --pipeline.model.prompt {None}|STR                             │
+│     Random seed for sampling train cameras. Fixing seed may    │ │     A prompt to be used in text to NeRF models (default: None) │
+│     help reduce variance of trained models across              │ │ --pipeline.model.warmup-length INT                             │
+│     different runs. (default: 42)                              │ │     period of steps where refinement is turned off (default:   │
+│ --pipeline.datamanager.fps-reset-every INT                     │ │     500)                                                       │
+│     The number of iterations before one resets fps sampler     │ │ --pipeline.model.refine-every INT                              │
+│     repeatly, which is essentially drawing fps_reset_every     │ │     period of steps where gaussians are culled and densified   │
+│     samples from the pool of all training cameras without      │ │     (default: 100)                                             │
+│     replacement before a new round of sampling starts.         │ │ --pipeline.model.resolution-schedule INT                       │
+│     (default: 100)                                             │ │     training starts at 1/d resolution, every n steps this is   │
+│ --pipeline.datamanager.dataloader-num-workers INT              │ │     doubled (default: 3000)                                    │
+│     The number of workers performing the dataloading from      │ │ --pipeline.model.background-color {random,black,white}         │
+│     either disk/RAM, which                                     │ │     Whether to randomize the background color. (default:       │
+│     includes collating, pixel sampling, unprojecting, ray      │ │     random)                                                    │
+│     generation etc. (default: 4)                               │ │ --pipeline.model.num-downscales INT                            │
+│ --pipeline.datamanager.prefetch-factor {None}|INT              │ │     at the beginning, resolution is 1/2^d, where d is this     │
+│     The limit number of batches a worker will start loading    │ │     number (default: 2)                                        │
+│     once an iterator is created.                               │ │ --pipeline.model.cull-alpha-thresh FLOAT                       │
+│     More details are described here:                           │ │     threshold of opacity for culling gaussians. One can set it │
+│     https://pytorch.org/docs/stable/data.html#torch.utils.data │ │     to a lower value (e.g. 0.005) for higher quality.          │
+│     .DataLoader (default: 4)                                   │ │     (default: 0.1)                                             │
+│ --pipeline.datamanager.cache-compressed-images {True,False}    │ │ --pipeline.model.cull-scale-thresh FLOAT                       │
+│     If True, cache raw image files as byte strings to RAM.     │ │     threshold of scale for culling huge gaussians (default:    │
+│     (default: False)                                           │ │     0.5)                                                       │
+╰────────────────────────────────────────────────────────────────╯ │ --pipeline.model.reset-alpha-every INT                         │
+╭─ pipeline.model.loss-coefficients options ─────────────────────╮ │     Every this many refinement steps, reset the alpha          │
+│ parameters to instantiate density field with                   │ │     (default: 30)                                              │
+│ ────────────────────────────────────────────────────────────── │ │ --pipeline.model.densify-grad-thresh FLOAT                     │
+│ --pipeline.model.loss-coefficients.rgb-loss-coarse FLOAT       │ │     threshold of positional gradient norm for densifying       │
+│     (default: 1.0)                                             │ │     gaussians (default: 0.0008)                                │
+│ --pipeline.model.loss-coefficients.rgb-loss-fine FLOAT         │ │ --pipeline.model.use-absgrad {True,False}                      │
+│     (default: 1.0)                                             │ │     Whether to use absgrad to densify gaussians, if False,     │
+╰────────────────────────────────────────────────────────────────╯ │     will use grad rather than absgrad (default: True)          │
+╭─ pipeline.model.camera-optimizer options ──────────────────────╮ │ --pipeline.model.densify-size-thresh FLOAT                     │
+│ Config of the camera optimizer to use                          │ │     below this size, gaussians are *duplicated*, otherwise     │
+│ ────────────────────────────────────────────────────────────── │ │     split (default: 0.01)                                      │
+│ --pipeline.model.camera-optimizer.mode {off,SO3xR3,SE3}        │ │ --pipeline.model.n-split-samples INT                           │
+│     Pose optimization strategy to use. If enabled, we          │ │     number of samples to split gaussians into (default: 2)     │
+│     recommend SO3xR3. (default: off)                           │ │ --pipeline.model.sh-degree-interval INT                        │
+│ --pipeline.model.camera-optimizer.trans-l2-penalty FLOAT       │ │     every n intervals turn on another sh degree (default:      │
+│     L2 penalty on translation parameters. (default: 0.01)      │ │     1000)                                                      │
+│ --pipeline.model.camera-optimizer.rot-l2-penalty FLOAT         │ │ --pipeline.model.cull-screen-size FLOAT                        │
+│     L2 penalty on rotation parameters. (default: 0.001)        │ │     if a gaussian is more than this percent of screen space,   │
+╰────────────────────────────────────────────────────────────────╯ │     cull it (default: 0.15)                                    │
+╭─ optimizers.means.optimizer options ───────────────────────────╮ │ --pipeline.model.split-screen-size FLOAT                       │
+│ Basic optimizer config with Adam                               │ │     if a gaussian is more than this percent of screen space,   │
+│ ────────────────────────────────────────────────────────────── │ │     split it (default: 0.05)                                   │
+│ --optimizers.means.optimizer.lr FLOAT                          │ │ --pipeline.model.stop-screen-size-at INT                       │
+│     The learning rate to use. (default: 0.00016)               │ │     stop culling/splitting at this step WRT screen size of     │
+│ --optimizers.means.optimizer.eps FLOAT                         │ │     gaussians (default: 4000)                                  │
+│     The epsilon value to use. (default: 1e-15)                 │ │ --pipeline.model.random-init {True,False}                      │
+│ --optimizers.means.optimizer.max-norm {None}|FLOAT             │ │     whether to initialize the positions uniformly randomly     │
+│     The max norm to use for gradient clipping. (default: None) │ │     (not SFM points) (default: False)                          │
+│ --optimizers.means.optimizer.weight-decay FLOAT                │ │ --pipeline.model.num-random INT                                │
+│     The weight decay to use. (default: 0)                      │ │     Number of gaussians to initialize if random init is used   │
+╰────────────────────────────────────────────────────────────────╯ │     (default: 50000)                                           │
+╭─ optimizers.means.scheduler options ───────────────────────────╮ │ --pipeline.model.random-scale FLOAT                            │
+│ Config for exponential decay scheduler with warmup             │ │     Size of the cube to initialize random gaussians within     │
+│ ────────────────────────────────────────────────────────────── │ │     (default: 10.0)                                            │
+│ --optimizers.means.scheduler.lr-pre-warmup FLOAT               │ │ --pipeline.model.ssim-lambda FLOAT                             │
+│     Learning rate before warmup. (default: 1e-08)              │ │     weight of ssim loss (default: 0.2)                         │
+│ --optimizers.means.scheduler.lr-final {None}|FLOAT             │ │ --pipeline.model.stop-split-at INT                             │
+│     Final learning rate. If not provided, it will be set to    │ │     stop splitting at this step (default: 15000)               │
+│     the optimizers learning rate. (default: 1.6e-06)           │ │ --pipeline.model.sh-degree INT                                 │
+│ --optimizers.means.scheduler.warmup-steps INT                  │ │     maximum degree of spherical harmonics to use (default: 3)  │
+│     Number of warmup steps. (default: 0)                       │ │ --pipeline.model.use-scale-regularization {True,False}         │
+│ --optimizers.means.scheduler.max-steps INT                     │ │     If enabled, a scale regularization introduced in PhysGauss │
+│     The maximum number of steps. (default: 30000)              │ │     (https://xpandora.github.io/PhysGaussian/) is used for     │
+│ --optimizers.means.scheduler.ramp {linear,cosine}              │ │     reducing huge spikey gaussians. (default: False)           │
+│     The ramp function to use during the warmup. (default:      │ │ --pipeline.model.max-gauss-ratio FLOAT                         │
+│     cosine)                                                    │ │     threshold of ratio of gaussian max to min scale before     │
+╰────────────────────────────────────────────────────────────────╯ │     applying regularization                                    │
+╭─ optimizers.features-dc options ───────────────────────────────╮ │     loss from the PhysGaussian paper (default: 10.0)           │
+│ --optimizers.features-dc.scheduler {None}                      │ │ --pipeline.model.output-depth-during-training {True,False}     │
+│     (default: None)                                            │ │     If True, output depth during training. Otherwise, only     │
+╰────────────────────────────────────────────────────────────────╯ │     output depth during evaluation. (default: False)           │
+╭─ optimizers.features-dc.optimizer options ─────────────────────╮ │ --pipeline.model.rasterize-mode {classic,antialiased}          │
+│ Basic optimizer config with Adam                               │ │     Classic mode of rendering will use the EWA volume          │
+│ ────────────────────────────────────────────────────────────── │ │     splatting with a [0.3, 0.3] screen space blurring kernel.  │
+│ --optimizers.features-dc.optimizer.lr FLOAT                    │ │     This                                                       │
+│     The learning rate to use. (default: 0.0025)                │ │     approach is however not suitable to render tiny gaussians  │
+│ --optimizers.features-dc.optimizer.eps FLOAT                   │ │     at higher or lower resolution than the captured, which     │
+│     The epsilon value to use. (default: 1e-15)                 │ │     results "aliasing-like" artifacts. The antialiased mode    │
+│ --optimizers.features-dc.optimizer.max-norm {None}|FLOAT       │ │     overcomes this limitation by calculating compensation      │
+│     The max norm to use for gradient clipping. (default: None) │ │     factors                                                    │
+│ --optimizers.features-dc.optimizer.weight-decay FLOAT          │ │     and apply them to the opacities of gaussians to preserve   │
+│     The weight decay to use. (default: 0)                      │ │     the total integrated density of splats.                    │
+╰────────────────────────────────────────────────────────────────╯ │                                                                │
+╭─ optimizers.features-rest options ─────────────────────────────╮ │                                                                │
+│ --optimizers.features-rest.scheduler {None}                    │ │     However, PLY exported with antialiased rasterize mode is   │
+│     (default: None)                                            │ │     not compatible with classic mode. Thus many web viewers    │
+╰────────────────────────────────────────────────────────────────╯ │     that                                                       │
+╭─ optimizers.features-rest.optimizer options ───────────────────╮ │     were implemented for classic mode can not render           │
+│ Basic optimizer config with Adam                               │ │     antialiased mode PLY properly without modifications.       │
+│ ────────────────────────────────────────────────────────────── │ │     (default: classic)                                         │
+│ --optimizers.features-rest.optimizer.lr FLOAT                  │ │ --pipeline.model.use-bilateral-grid {True,False}               │
+│     The learning rate to use. (default: 0.000125)              │ │     If True, use bilateral grid to handle the ISP changes in   │
+│ --optimizers.features-rest.optimizer.eps FLOAT                 │ │     the image space. This technique was introduced in the      │
+│     The epsilon value to use. (default: 1e-15)                 │ │     paper 'Bilateral Guided Radiance Field Processing'         │
+│ --optimizers.features-rest.optimizer.max-norm {None}|FLOAT     │ │     (https://bilarfpro.github.io/). (default: False)           │
+│     The max norm to use for gradient clipping. (default: None) │ │ --pipeline.model.grid-shape INT INT INT                        │
+│ --optimizers.features-rest.optimizer.weight-decay FLOAT        │ │     Shape of the bilateral grid (X, Y, W) (default: 16 16 8)   │
+│     The weight decay to use. (default: 0)                      │ │ --pipeline.model.color-corrected-metrics {True,False}          │
+╰────────────────────────────────────────────────────────────────╯ │     If True, apply color correction to the rendered images     │
+╭─ optimizers.opacities options ─────────────────────────────────╮ │     before computing the metrics. (default: False)             │
+│ --optimizers.opacities.scheduler {None}                        │ │ --pipeline.model.strategy {default,mcmc}                       │
+│     (default: None)                                            │ │     The default strategy will be used if strategy is not       │
+╰────────────────────────────────────────────────────────────────╯ │     specified. Other strategies, e.g. mcmc, can be used.       │
+╭─ optimizers.opacities.optimizer options ───────────────────────╮ │     (default: default)                                         │
+│ Basic optimizer config with Adam                               │ │ --pipeline.model.max-gs-num INT                                │
+│ ────────────────────────────────────────────────────────────── │ │     Maximum number of GSs. Default to 1_000_000. (default:     │
+│ --optimizers.opacities.optimizer.lr FLOAT                      │ │     1000000)                                                   │
+│     The learning rate to use. (default: 0.05)                  │ │ --pipeline.model.noise-lr FLOAT                                │
+│ --optimizers.opacities.optimizer.eps FLOAT                     │ │     MCMC samping noise learning rate. Default to 5e5.          │
+│     The epsilon value to use. (default: 1e-15)                 │ │     (default: 500000.0)                                        │
+│ --optimizers.opacities.optimizer.max-norm {None}|FLOAT         │ │ --pipeline.model.mcmc-opacity-reg FLOAT                        │
+│     The max norm to use for gradient clipping. (default: None) │ │     Regularization term for opacity in MCMC strategy. Only     │
+│ --optimizers.opacities.optimizer.weight-decay FLOAT            │ │     enabled when using MCMC strategy (default: 0.01)           │
+│     The weight decay to use. (default: 0)                      │ │ --pipeline.model.mcmc-scale-reg FLOAT                          │
+╰────────────────────────────────────────────────────────────────╯ │     Regularization term for scale in MCMC strategy. Only       │
+╭─ optimizers.scales options ────────────────────────────────────╮ │     enabled when using MCMC strategy (default: 0.01)           │
+│ --optimizers.scales.scheduler {None}                           │ ╰────────────────────────────────────────────────────────────────╯
+│     (default: None)                                            │ ╭─ optimizers.scales.optimizer options ──────────────────────────╮
+╰────────────────────────────────────────────────────────────────╯ │ Basic optimizer config with Adam                               │
+╭─ optimizers.quats options ─────────────────────────────────────╮ │ ────────────────────────────────────────────────────────────── │
+│ --optimizers.quats.scheduler {None}                            │ │ --optimizers.scales.optimizer.lr FLOAT                         │
+│     (default: None)                                            │ │     The learning rate to use. (default: 0.005)                 │
+╰────────────────────────────────────────────────────────────────╯ │ --optimizers.scales.optimizer.eps FLOAT                        │
+╭─ optimizers.quats.optimizer options ───────────────────────────╮ │     The epsilon value to use. (default: 1e-15)                 │
+│ Basic optimizer config with Adam                               │ │ --optimizers.scales.optimizer.max-norm {None}|FLOAT            │
+│ ────────────────────────────────────────────────────────────── │ │     The max norm to use for gradient clipping. (default: None) │
+│ --optimizers.quats.optimizer.lr FLOAT                          │ │ --optimizers.scales.optimizer.weight-decay FLOAT               │
+│     The learning rate to use. (default: 0.001)                 │ │     The weight decay to use. (default: 0)                      │
+│ --optimizers.quats.optimizer.eps FLOAT                         │ ╰────────────────────────────────────────────────────────────────╯
+│     The epsilon value to use. (default: 1e-15)                 │ ╭─ optimizers.camera-opt.optimizer options ──────────────────────╮
+│ --optimizers.quats.optimizer.max-norm {None}|FLOAT             │ │ Basic optimizer config with Adam                               │
+│     The max norm to use for gradient clipping. (default: None) │ │ ────────────────────────────────────────────────────────────── │
+│ --optimizers.quats.optimizer.weight-decay FLOAT                │ │ --optimizers.camera-opt.optimizer.lr FLOAT                     │
+│     The weight decay to use. (default: 0)                      │ │     The learning rate to use. (default: 0.0001)                │
+╰────────────────────────────────────────────────────────────────╯ │ --optimizers.camera-opt.optimizer.eps FLOAT                    │
+╭─ optimizers.camera-opt.scheduler options ──────────────────────╮ │     The epsilon value to use. (default: 1e-15)                 │
+│ Config for exponential decay scheduler with warmup             │ │ --optimizers.camera-opt.optimizer.max-norm {None}|FLOAT        │
+│ ────────────────────────────────────────────────────────────── │ │     The max norm to use for gradient clipping. (default: None) │
+│ --optimizers.camera-opt.scheduler.lr-pre-warmup FLOAT          │ │ --optimizers.camera-opt.optimizer.weight-decay FLOAT           │
+│     Learning rate before warmup. (default: 0)                  │ │     The weight decay to use. (default: 0)                      │
+│ --optimizers.camera-opt.scheduler.lr-final {None}|FLOAT        │ ╰────────────────────────────────────────────────────────────────╯
+│     Final learning rate. If not provided, it will be set to    │ ╭─ optimizers.bilateral-grid.optimizer options ──────────────────╮
+│     the optimizers learning rate. (default: 5e-07)             │ │ Basic optimizer config with Adam                               │
+│ --optimizers.camera-opt.scheduler.warmup-steps INT             │ │ ────────────────────────────────────────────────────────────── │
+│     Number of warmup steps. (default: 1000)                    │ │ --optimizers.bilateral-grid.optimizer.lr FLOAT                 │
+│ --optimizers.camera-opt.scheduler.max-steps INT                │ │     The learning rate to use. (default: 0.002)                 │
+│     The maximum number of steps. (default: 30000)              │ │ --optimizers.bilateral-grid.optimizer.eps FLOAT                │
+│ --optimizers.camera-opt.scheduler.ramp {linear,cosine}         │ │     The epsilon value to use. (default: 1e-15)                 │
+│     The ramp function to use during the warmup. (default:      │ │ --optimizers.bilateral-grid.optimizer.max-norm {None}|FLOAT    │
+│     cosine)                                                    │ │     The max norm to use for gradient clipping. (default: None) │
+╰────────────────────────────────────────────────────────────────╯ │ --optimizers.bilateral-grid.optimizer.weight-decay FLOAT       │
+╭─ optimizers.bilateral-grid.scheduler options ──────────────────╮ │     The weight decay to use. (default: 0)                      │
+│ Config for exponential decay scheduler with warmup             │ ╰────────────────────────────────────────────────────────────────╯
+│ ────────────────────────────────────────────────────────────── │ ╭─ optional subcommands ─────────────────────────────────────────╮
+│ --optimizers.bilateral-grid.scheduler.lr-pre-warmup FLOAT      │ │ (default: nerfstudio-data)                                     │
+│     Learning rate before warmup. (default: 0)                  │ │ ────────────────────────────────────────────────────────────── │
+│ --optimizers.bilateral-grid.scheduler.lr-final {None}|FLOAT    │ │ [{nerfstudio-data,minimal-parser,arkit-data,blender-data,insta │
+│     Final learning rate. If not provided, it will be set to    │ │ nt-ngp-data,nuscenes-data,dnerf-data,phototourism-data,dycheck │
+│     the optimizers learning rate. (default: 0.0001)            │ │ -data,scannet-data,sdfstudio-data,nerfosr-data,sitcoms3d-data, │
+│ --optimizers.bilateral-grid.scheduler.warmup-steps INT         │ │ scannetpp-data,colmap}]                                        │
+│     Number of warmup steps. (default: 1000)                    │ │     nerfstudio-data                                            │
+│ --optimizers.bilateral-grid.scheduler.max-steps INT            │ │     minimal-parser                                             │
+│     The maximum number of steps. (default: 30000)              │ │     arkit-data                                                 │
+│ --optimizers.bilateral-grid.scheduler.ramp {linear,cosine}     │ │     blender-data                                               │
+│     The ramp function to use during the warmup. (default:      │ │     instant-ngp-data                                           │
+│     cosine)                                                    │ │     nuscenes-data                                              │
+╰────────────────────────────────────────────────────────────────╯ │     dnerf-data                                                 │
+                                                                   │     phototourism-data                                          │
+                                                                   │     dycheck-data                                               │
+                                                                   │     scannet-data                                               │
+                                                                   │     sdfstudio-data                                             │
+                                                                   │     nerfosr-data                                               │
+                                                                   │     sitcoms3d-data                                             │
+                                                                   │     scannetpp-data                                             │
+                                                                   │     colmap                                                     │
+                                                                   ╰────────────────────────────────────────────────────────────────╯
