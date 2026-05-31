@@ -1,4 +1,3 @@
-<img width="3796" height="1965" alt="dispaly" src="https://github.com/user-attachments/assets/5c7a8974-8aec-46b9-ae91-aad1e7ce008d" />
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
