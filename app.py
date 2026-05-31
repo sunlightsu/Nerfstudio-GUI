@@ -9,11 +9,12 @@
 """
 
 import asyncio
+import json
 import os
 from pathlib import Path
 from typing import AsyncGenerator, Optional
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
@@ -22,6 +23,7 @@ from pydantic import BaseModel, Field
 # ── FastAPI 初始化 ──────────────────────────────────────────────
 
 BASE_DIR = Path(__file__).resolve().parent
+PATHS_FILE = BASE_DIR / "saved_paths.json"
 app = FastAPI(title="Nerfstudio GUI", version="1.0.0")
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
@@ -37,6 +39,21 @@ def render_template(name: str, request: Request) -> HTMLResponse:
     """渲染 Jinja2 模板并返回 HTMLResponse。"""
     template = jinja_env.get_template(name)
     return HTMLResponse(template.render(request=request))
+
+
+# ── 路径书签 ────────────────────────────────────────────────────
+
+PATHS_FILE = BASE_DIR / "saved_paths.json"
+
+
+def load_saved_paths() -> list[str]:
+    if PATHS_FILE.exists():
+        return json.loads(PATHS_FILE.read_text(encoding="utf-8"))
+    return []
+
+
+def save_saved_paths(paths: list[str]):
+    PATHS_FILE.write_text(json.dumps(paths, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 # ── Pydantic 模型 ────────────────────────────────────────────────
@@ -59,9 +76,17 @@ class ProcessRequest(BaseModel):
     refine_intrinsics: bool = Field(True, description="BA 精化内参")
     use_sfm_depth: bool = Field(False, description="是否导出 SfM 深度图")
     same_dimensions: bool = Field(True, description="图像尺寸是否一致")
+    use_single_camera_mode: bool = Field(True, description="是否假设所有图像使用同一相机内参（仅 hloc）")
+    percent_radius_crop: Optional[float] = Field(None, description="圆形裁剪遮罩半径（图像对角线百分比）")
     verbose: bool = Field(False, description="详细输出")
     skip_colmap: bool = Field(False, description="跳过 COLMAP")
     skip_image_processing: bool = Field(False, description="跳过图像处理")
+    colmap_model_path: Optional[str] = Field(None, description="COLMAP 模型路径（仅 --skip-colmap 时使用）")
+    colmap_cmd: Optional[str] = Field(None, description="COLMAP 可执行文件路径")
+    images_per_equirect: Optional[int] = Field(None, description="每张全景图采样数（仅 equirectangular，8 或 14）")
+    crop_bottom: Optional[float] = Field(None, description="底部裁剪比例 [0,1]")
+    include_depth_debug: bool = Field(False, description="导出 SfM 深度调试图像")
+    eval_data: Optional[str] = Field(None, description="评估数据路径（None 则复用训练数据）")
     # video 专属
     num_frames_per_second: Optional[float] = Field(None, description="每秒抽帧数（video 模式）")
     start_frame: Optional[int] = Field(None, description="起始帧（video 模式）")
@@ -144,9 +169,9 @@ class ExportRequest(BaseModel):
     # marching-cubes 专属
     simplify_mesh: Optional[bool] = Field(None, description="是否简化网格")
     isosurface_threshold: Optional[float] = Field(None, description="等值面阈值")
-
-
-# ── 命令构建 ────────────────────────────────────────────────────
+    # gaussian-splat 专属
+    output_filename: Optional[str] = Field(None, description="输出文件名（默认 splat.ply）")
+    ply_color_mode: Optional[str] = Field(None, description="PLY 颜色模式：sh_coeffs / rgb")
 
 def _opt(key: str, value, quote: bool = False, bool_as_flag: bool = True) -> str:
     """构建单个 CLI 选项字符串。
@@ -183,15 +208,23 @@ def build_process_cmd(r: ProcessRequest) -> str:
         ("num-downscales", r.num_downscales),
         ("max-dataset-size", r.max_dataset_size),
         ("crop-factor", r.crop_factor),
+        ("crop-bottom", r.crop_bottom),
         ("feature-type", r.feature_type),
         ("matcher-type", r.matcher_type),
         ("refine-pixsfm", r.refine_pixsfm),
         ("refine-intrinsics", r.refine_intrinsics),
         ("use-sfm-depth", r.use_sfm_depth),
+        ("include-depth-debug", r.include_depth_debug),
         ("same-dimensions", r.same_dimensions),
+        ("use-single-camera-mode", r.use_single_camera_mode),
+        ("percent-radius-crop", r.percent_radius_crop),
         ("verbose", r.verbose),
         ("skip-colmap", r.skip_colmap),
         ("skip-image-processing", r.skip_image_processing),
+        ("colmap-model-path", r.colmap_model_path),
+        ("colmap-cmd", r.colmap_cmd),
+        ("images-per-equirect", r.images_per_equirect),
+        ("eval-data", r.eval_data),
         ("num-frames-per-second", r.num_frames_per_second),
         ("start-frame", r.start_frame),
         ("end-frame", r.end_frame),
@@ -213,51 +246,63 @@ def build_train_cmd(r: TrainRequest) -> str:
         _opt("mixed-precision", r.mixed_precision),
         _opt("steps-per-save", r.steps_per_save if r.steps_per_save != 2000 else None),
     ]
-    # pipeline.datamanager.*
-    dm = [
-        ("train-num-rays-per-batch", r.train_num_rays_per_batch),
-        ("cache-images-type", r.cache_images_type),
-        ("camera-res-scale-factor", r.camera_res_scale_factor),
-        ("eval-num-rays-per-batch", r.steps_per_eval_batch),  # note: steps_per_eval_batch reused
-    ]
-    for key, val in dm:
-        opt = _opt(f"pipeline.datamanager.{key}", val)
-        if opt:
-            parts.append(opt)
-    # pipeline.model.*
-    model = [
-        ("num-nerf-samples-per-ray", r.num_nerf_samples_per_ray),
-        ("num-proposal-samples-per-ray", r.num_proposal_samples_per_ray),
-        ("max-res", r.max_res),
-        ("log2-hashmap-size", r.log2_hashmap_size),
-        ("num-levels", r.num_levels),
-        ("hidden-dim", r.hidden_dim),
-        ("hidden-dim-color", r.hidden_dim_color),
-        ("near-plane", r.near_plane),
-        ("far-plane", r.far_plane),
-        ("background-color", r.background_color),
-    ]
-    for key, val in model:
-        opt = _opt(f"pipeline.model.{key}", val)
-        if opt:
-            parts.append(opt)
+    # pipeline.datamanager: splatfacto 没有 train-num-rays-per-batch，只有 nerfacto 有
+    if r.method == "nerfacto":
+        dm = [
+            ("train-num-rays-per-batch", r.train_num_rays_per_batch),
+            ("cache-images-type", r.cache_images_type),
+            ("camera-res-scale-factor", r.camera_res_scale_factor),
+        ]
+        for key, val in dm:
+            opt = _opt(f"pipeline.datamanager.{key}", val)
+            if opt:
+                parts.append(opt)
+    if r.method == "splatfacto":
+        # splatfacto datamanager 只接受这些
+        dm = [
+            ("cache-images-type", r.cache_images_type),
+            ("camera-res-scale-factor", r.camera_res_scale_factor),
+        ]
+        for key, val in dm:
+            opt = _opt(f"pipeline.datamanager.{key}", val)
+            if opt:
+                parts.append(opt)
+    # pipeline.model: nerfacto 专属 (hashgrid / proposal 系列)
+    if r.method == "nerfacto":
+        model = [
+            ("num-nerf-samples-per-ray", r.num_nerf_samples_per_ray),
+            ("num-proposal-samples-per-ray", r.num_proposal_samples_per_ray),
+            ("max-res", r.max_res),
+            ("log2-hashmap-size", r.log2_hashmap_size),
+            ("num-levels", r.num_levels),
+            ("hidden-dim", r.hidden_dim),
+            ("hidden-dim-color", r.hidden_dim_color),
+            ("near-plane", r.near_plane),
+            ("far-plane", r.far_plane),
+            ("background-color", r.background_color),
+        ]
+        for key, val in model:
+            opt = _opt(f"pipeline.model.{key}", val)
+            if opt:
+                parts.append(opt)
     # camera-optimizer
     if r.camera_optimizer_mode is not None:
         parts.append(_opt("pipeline.model.camera-optimizer.mode", r.camera_optimizer_mode))
-    # splatfacto 专属
-    splat = [
-        ("sh-degree", r.sh_degree),
-        ("cull-alpha-thresh", r.cull_alpha_thresh),
-        ("densify-grad-thresh", r.densify_grad_thresh),
-        ("ssim-lambda", r.ssim_lambda),
-        ("refine-every", r.refine_every),
-        ("random-init", r.random_init),
-    ]
-    for key, val in splat:
-        opt = _opt(f"pipeline.model.{key}", val)
-        if opt:
-            parts.append(opt)
-
+    # splatfacto 专属 (GS 系列)
+    if r.method == "splatfacto":
+        splat = [
+            ("sh-degree", r.sh_degree),
+            ("cull-alpha-thresh", r.cull_alpha_thresh),
+            ("densify-grad-thresh", r.densify_grad_thresh),
+            ("ssim-lambda", r.ssim_lambda),
+            ("refine-every", r.refine_every),
+            ("random-init", r.random_init),
+            ("background-color", r.background_color),
+        ]
+        for key, val in splat:
+            opt = _opt(f"pipeline.model.{key}", val)
+            if opt:
+                parts.append(opt)
     return " ".join(parts)
 
 
@@ -314,7 +359,13 @@ def build_export_cmd(r: ExportRequest) -> str:
             ("target-num-faces", r.target_num_faces),
             ("num-pixels-per-side", r.num_pixels_per_side),
         ],
-        "gaussian-splat": [],
+        "gaussian-splat": [
+            ("output-filename", r.output_filename),
+            ("obb-center", r.obb_center),
+            ("obb-rotation", r.obb_rotation),
+            ("obb-scale", r.obb_scale),
+            ("ply-color-mode", r.ply_color_mode),
+        ],
         "marching-cubes": [
             ("resolution", r.resolution),
             ("isosurface-threshold", r.isosurface_threshold),
@@ -383,6 +434,53 @@ async def api_train(req: TrainRequest):
 async def api_export(req: ExportRequest):
     cmd = build_export_cmd(req)
     return StreamingResponse(sse_stream(cmd), media_type="text/event-stream")
+
+
+@app.get("/api/browse")
+async def api_browse(path: str = Query(default="E:\\")):
+    """浏览文件系统，返回目录下的文件夹列表。"""
+    p = Path(path)
+    if not p.exists():
+        return {"error": f"路径不存在", "folders": [], "parent": None}
+    if not p.is_dir():
+        p = p.parent
+    try:
+        items = []
+        for child in sorted(p.iterdir()):
+            if child.is_dir() and not child.name.startswith("."):
+                items.append({"name": child.name, "path": str(child), "type": "folder"})
+        parent = str(p.parent) if p.parent != p else None
+        return {"folders": items, "current": str(p), "parent": parent}
+    except PermissionError:
+        return {"error": "无权限访问", "folders": [], "current": str(p), "parent": str(p.parent)}
+
+
+@app.get("/api/paths")
+async def get_saved_paths():
+    return {"paths": load_saved_paths()}
+
+
+@app.post("/api/paths")
+async def add_saved_path(req: Request):
+    body = await req.json()
+    new_path = body.get("path", "").strip()
+    if not new_path:
+        return {"error": "路径为空"}
+    paths = load_saved_paths()
+    if new_path not in paths:
+        paths.append(new_path)
+        save_saved_paths(paths)
+    return {"paths": paths}
+
+
+@app.delete("/api/paths")
+async def remove_path(req: Request):
+    body = await req.json()
+    target = body.get("path", "").strip()
+    paths = load_saved_paths()
+    paths = [p for p in paths if p != target]
+    save_saved_paths(paths)
+    return {"paths": paths}
 
 
 if __name__ == "__main__":

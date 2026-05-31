@@ -1,212 +1,121 @@
-/* ── 基础重置 ─────────────────────────────────── */
+/* ── 基础 ────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", system-ui, sans-serif; background: #18172a; color: #e0e0e0; height: 100vh; overflow: hidden; }
 
-body {
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  min-height: 100vh;
-}
-
-/* ── 头部与 Tab 导航 ──────────────────────────── */
-.header {
-  background: #16213e;
-  border-bottom: 1px solid #0f3460;
-  padding: 16px 24px 0;
-}
-.header h1 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #e94560;
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-}
+/* ── 头部 ────────────────────────────────────── */
+.header { background: #16213e; border-bottom: 1px solid #0f3460; padding: 10px 16px 0; }
+.header h1 { font-size: 1.4rem; color: #e94560; margin-bottom: 8px; }
+.tabs { display: flex; gap: 80px; overflow-x: auto; }
 .tab {
-  background: none;
-  border: none;
-  color: #888;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color .2s, border-color .2s;
+  background: none; border: none; color: #505050; padding: 8px 14px;
+  font-size: 1.02rem; cursor: pointer; white-space: nowrap;
+  border-bottom: 8px solid transparent; transition: .2s;
 }
 .tab:hover { color: #ccc; }
-.tab.active { color: #e94560; border-bottom-color: #e94560; }
+.tab.active { color: #e94560; border-bottom-color: #3574cc; }
+
+/* ── 两栏布局 ────────────────────────────────── */
+.main-layout { display: flex; height: calc(100vh - 80px); }
+.left-panel { width: 34%; overflow-y: auto; padding: 12px 10px; border-right: 1px solid #333; }
+.right-panel { width: 66%; display: flex; flex-direction: column; }
 
 /* ── 面板 ────────────────────────────────────── */
-.panels { max-width: 900px; margin: 24px auto; padding: 0 16px; }
 .panel { display: none; }
 .panel.active { display: block; }
 
 /* ── 表单 ────────────────────────────────────── */
 fieldset {
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 16px;
-  background: #16213e;
+  border: 1px solid #333; border-radius: 5px; padding: 10px;
+  margin-bottom: 10px; background: #16213e;
 }
-legend {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #ccc;
-  padding: 0 6px;
-}
-legend.collapsible {
-  cursor: pointer;
-  user-select: none;
-}
+legend { font-weight: 600; font-size: 1.05rem; color: #ccc; padding: 0 4px; }
+legend.collapsible { cursor: pointer; user-select: none; }
 legend.collapsible:hover { color: #e94560; }
-
 .collapsed { display: none; }
-
 .param-group-title {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: #e94560;
-  margin: 14px 0 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #333;
-  letter-spacing: 0.05em;
+  font-size: 0.92rem; text-transform: uppercase; color: #e94560;
+  margin: 10px 0 6px 0; padding-bottom: 3px; border-bottom: 1px solid #333; letter-spacing: 0.03em;
 }
-
-.form-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  gap: 12px;
-}
-.form-row > label:first-child {
-  min-width: 130px;
-  font-size: 0.85rem;
-  color: #aaa;
-  flex-shrink: 0;
-}
+.form-row { display: flex; align-items: baseline; margin-bottom: 8px; gap: 8px; }
+.form-row > label:first-child { min-width: 180px; max-width: 200px; font-size: 0.85rem; color: #aaa; flex-shrink: 0; word-break: break-word; line-height: 1.2; }
 .form-row input[type="text"],
 .form-row input[type="number"],
 .form-row select {
-  flex: 1;
-  background: #0f3460;
-  border: 1px solid #333;
-  color: #e0e0e0;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 0.85rem;
+  flex: 1; background: #0f3460; border: 1px solid #333; color: #e0e0e0;
+  padding: 6px 8px; border-radius: 4px; font-size: 0.98rem; height: 32px; line-height: 1.2;
 }
-.form-row input:focus,
-.form-row select:focus {
-  outline: none;
-  border-color: #e94560;
-}
-
+.form-row input:focus, .form-row select:focus { outline: none; border-color: #e94560; }
 .required { color: #e94560; }
+.radio-group { display: flex; gap: 12px; }
+.radio-label, .switch-label { font-size: 0.98rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.radio-label input, .switch-label input { accent-color: #e94560; }
 
-.radio-group { display: flex; gap: 16px; }
-.radio-label,
-.switch-label {
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.radio-label input,
-.switch-label input { accent-color: #e94560; }
+/* ── 路径输入行 ──────────────────────────────── */
+.path-row { display: flex; gap: 4px; }
+.path-row input { flex: 1; }
+.path-row .btn-bookmark { background: #333; border: 1px solid #555; color: #aaa; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem; white-space: nowrap; }
+.path-row .btn-bookmark:hover { background: #444; color: #fff; }
+.path-dropdown { position: absolute; background: #16213e; border: 1px solid #555; border-radius: 4px; z-index: 100; max-height: 160px; overflow-y: auto; display: none; }
+.path-dropdown.show { display: block; }
+.path-dropdown div { padding: 6px 10px; font-size: 0.75rem; cursor: pointer; color: #ccc; white-space: nowrap; }
+.path-dropdown div:hover { background: #0f3460; color: #e94560; }
 
-/* ── 预设按钮 ────────────────────────────────── */
+/* ── 显存预设 ────────────────────────────────── */
 .presets-fieldset { background: #1a1a2e; }
-.preset-btns { display: flex; gap: 8px; }
-.preset {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #444;
-  border-radius: 4px;
-  background: #0f3460;
-  color: #aaa;
-  cursor: pointer;
-  font-size: 0.82rem;
-  transition: all .2s;
-}
+.preset-btns { display: flex; gap: 6px; }
+.preset { flex: 1; padding: 6px; border: 1px solid #444; border-radius: 4px; background: #0f3460; color: #aaa; cursor: pointer; font-size: 0.95rem; }
 .preset:hover { border-color: #e94560; color: #fff; }
 .preset.active { border-color: #e94560; color: #e94560; background: #1a1a2e; }
 
 /* ── 执行按钮 ────────────────────────────────── */
-.btn-run {
-  width: 100%;
-  padding: 12px;
-  background: #e94560;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background .2s;
-  margin-top: 8px;
-}
+.btn-run { width: 100%; padding: 10px; background: #e94560; color: #fff; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 6px; }
 .btn-run:hover { background: #d63851; }
 .btn-run:disabled { background: #555; cursor: not-allowed; }
 
-/* ── 终端 ────────────────────────────────────── */
-.terminal-section {
-  max-width: 900px;
-  margin: 0 auto 24px;
-  padding: 0 16px;
-}
+/* ── 文件浏览器 ──────────────────────────────── */
+.browser-nav { display: flex; gap: 6px; margin-bottom: 8px; }
+.browse-input { flex: 1; background: #0f3460; border: 1px solid #333; color: #e0e0e0; padding: 6px 8px; border-radius: 4px; font-size: 0.78rem; }
+.btn-go { background: #0f3460; border: 1px solid #333; color: #e0e0e0; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+.btn-go:hover { border-color: #e94560; }
+.browse-breadcrumb { font-size: 0.7rem; color: #888; margin-bottom: 6px; word-break: break-all; }
+.browse-breadcrumb a { color: #6c9ce0; cursor: pointer; text-decoration: none; }
+.browse-breadcrumb a:hover { color: #e94560; }
+.browse-list { max-height: 300px; overflow-y: auto; }
+.browse-item { display: flex; align-items: center; padding: 6px 8px; cursor: pointer; border-radius: 3px; font-size: 0.98rem; gap: 8px; }
+.browse-item:hover { background: #0f3460; }
+.browse-item .folder-icon { color: #e9c46a; font-size: 0.9rem; }
+.browse-item .item-name { flex: 1; }
+.browse-item .btn-bookmark-item { background: none; border: none; color: #888; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; }
+.browse-item .btn-bookmark-item:hover { color: #e94560; }
+.browse-footer { margin-top: 10px; }
+.btn-save-path { width: 100%; padding: 6px; background: #0f3460; border: 1px solid #444; color: #aaa; border-radius: 4px; cursor: pointer; font-size: 0.78rem; }
+.btn-save-path:hover { border-color: #e94560; color: #fff; }
 
-.terminal-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  background: #111;
-  border: 1px solid #333;
-  border-bottom: none;
-  border-radius: 6px 6px 0 0;
-}
-.terminal-title { font-size: 0.85rem; font-weight: 600; color: #aaa; }
-.terminal-status {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 3px;
-  flex: 1;
-}
+/* ── 书签管理 ────────────────────────────────── */
+.bookmark-manager { margin-top: 20px; }
+.bookmark-list { max-height: 150px; overflow-y: auto; }
+.bookmark-row { display: flex; align-items: center; padding: 6px 6px; font-size: 0.93rem; gap: 6px; border-radius: 3px; }
+.bookmark-row:hover { background: #0f3460; }
+.bookmark-row .bm-path { flex: 1; color: #ccc; word-break: break-all; cursor: pointer; font-size: 0.93rem; }
+.bookmark-row .bm-path:hover { color: #e94560; }
+.bookmark-row .bm-del { background: none; border: none; color: #888; cursor: pointer; font-size: 0.75rem; padding: 2px 4px; }
+.bookmark-row .bm-del:hover { color: #e94560; }
+
+/* ── 终端（右侧栏） ────────────────────────────── */
+.terminal-toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #111; border-bottom: 1px solid #333; }
+.terminal-title { font-size: 0.8rem; font-weight: 600; color: #aaa; }
+.terminal-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 3px; flex: 1; }
 .terminal-status.idle { color: #666; }
 .terminal-status.running { color: #e94560; }
 .terminal-status.done { color: #4ecca3; }
 .terminal-status.error { color: #ff6b6b; }
-
-.btn-copy, .btn-clear {
-  background: #333;
-  border: 1px solid #555;
-  color: #aaa;
-  padding: 4px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all .2s;
-}
+.btn-copy, .btn-clear { background: #333; border: 1px solid #555; color: #aaa; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 0.72rem; }
 .btn-copy:hover, .btn-clear:hover { background: #444; color: #fff; }
-
 .terminal-output {
-  background: #0a0a0a;
-  color: #4ecca3;
-  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  padding: 12px;
-  border: 1px solid #333;
-  border-radius: 0 0 6px 6px;
-  min-height: 200px;
-  max-height: 400px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
+  flex: 1; background: #0a0a0a; color: #4ecca3;
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.75rem; line-height: 1.45; padding: 10px;
+  overflow-y: auto; white-space: pre-wrap; word-break: break-all;
 }
 .terminal-output .cmd-line { color: #f0c040; }
 .terminal-output .err-line { color: #ff6b6b; }

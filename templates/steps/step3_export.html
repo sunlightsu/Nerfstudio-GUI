@@ -129,22 +129,37 @@
   <fieldset id="export-params-mc" class="export-params" style="display:none">
     <legend>Marching Cubes 参数</legend>
     <div class="form-row">
-      <label for="exp-mc-res">分辨率</label>
+      <label for="exp-mc-res">resolution / 分辨率</label>
       <input id="exp-mc-res" name="resolution" type="number" placeholder="默认 1024">
     </div>
     <div class="form-row">
-      <label for="exp-mc-faces">目标三角面数</label>
+      <label for="exp-mc-faces">target-num-faces / 目标面数</label>
       <input id="exp-mc-faces" name="target_num_faces" type="number" placeholder="默认 50000">
     </div>
     <div class="form-row">
-      <label for="exp-mc-texres">纹理分辨率</label>
+      <label for="exp-mc-texres">num-pixels-per-side / 纹理分辨率</label>
       <input id="exp-mc-texres" name="num_pixels_per_side" type="number" placeholder="默认 2048">
     </div>
     <div class="form-row">
-      <label>简化网格</label>
+      <label>simplify-mesh / 简化网格</label>
       <select name="simplify_mesh"><option value="">默认 False</option><option value="true">True</option><option value="false">False</option></select>
     </div>
   </fieldset>
 
-  <button type="submit" class="btn-run">▶ 开始导出</button>
+  <!-- gaussian-splat -->
+  <fieldset id="export-params-gs" class="export-params" style="display:none">
+    <legend>Gaussian-Splat 参数</legend>
+    <div class="form-row">
+      <label for="exp-gs-file">output-filename / 输出文件名</label>
+      <input id="exp-gs-file" name="output_filename" type="text" placeholder="默认 splat.ply">
+    </div>
+    <div class="form-row">
+      <label for="exp-gs-color">ply-color-mode / 颜色模式</label>
+      <select id="exp-gs-color" name="ply_color_mode">
+        <option value="">默认 sh_coeffs</option><option value="sh_coeffs">sh_coeffs (球谐)</option><option value="rgb">rgb</option>
+      </select>
+    </div>
+  </fieldset>
+
+  <button type="submit" class="btn-run">▶ 开始导出 / Start Export</button>
 </form>

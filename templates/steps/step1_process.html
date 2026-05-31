@@ -1,46 +1,49 @@
 <form id="form-step1" class="step-form">
-  <!-- 数据源类型 -->
   <fieldset>
-    <legend>数据源</legend>
+    <legend>data / 数据源</legend>
     <div class="form-row">
-      <label>数据源类型</label>
+      <label>data_type / 数据源类型</label>
       <div class="radio-group">
-        <label class="radio-label"><input type="radio" name="data_type" value="images" checked> 图片 (images)</label>
-        <label class="radio-label"><input type="radio" name="data_type" value="video"> 视频 (video)</label>
+        <label class="radio-label"><input type="radio" name="data_type" value="images" checked> images (图片)</label>
+        <label class="radio-label"><input type="radio" name="data_type" value="video"> video (视频)</label>
       </div>
     </div>
     <div class="form-row">
-      <label for="proc-data">输入路径 <span class="required">*</span></label>
+      <label for="proc-data">data / 输入路径 <span class="required">*</span></label>
       <input id="proc-data" name="data" type="text" placeholder="E:\photos\my_scene" required>
     </div>
     <div class="form-row">
-      <label for="proc-output">输出目录 <span class="required">*</span></label>
+      <label for="proc-output">output-dir / 输出目录 <span class="required">*</span></label>
       <input id="proc-output" name="output_dir" type="text" placeholder="E:\data\processed" required>
+    </div>
+    <div class="form-row">
+      <label for="proc-eval">eval-data / 评估数据</label>
+      <input id="proc-eval" name="eval_data" type="text" placeholder="留空则复用训练数据">
     </div>
   </fieldset>
 
-  <!-- 相机与 SfM -->
   <fieldset>
-    <legend>相机与 SfM 配置</legend>
+    <legend>camera/SfM / 相机与SfM</legend>
     <div class="form-row">
-      <label for="proc-camera">相机类型</label>
+      <label for="proc-camera">camera-type / 相机类型</label>
       <select id="proc-camera" name="camera_type">
         <option value="perspective">perspective (透视)</option>
         <option value="fisheye">fisheye (鱼眼)</option>
         <option value="pinhole">pinhole (针孔)</option>
-        <option value="simple_pinhole">simple_pinhole (简单针孔)</option>
+        <option value="simple_pinhole">simple_pinhole</option>
+        <option value="equirectangular">equirectangular (全景)</option>
       </select>
     </div>
     <div class="form-row">
-      <label for="proc-matching">匹配方式</label>
+      <label for="proc-matching">matching-method / 匹配方式</label>
       <select id="proc-matching" name="matching_method">
         <option value="vocab_tree">vocab_tree (推荐)</option>
-        <option value="exhaustive">exhaustive (精确但慢)</option>
-        <option value="sequential">sequential (快速/视频)</option>
+        <option value="exhaustive">exhaustive (精确)</option>
+        <option value="sequential">sequential (视频用)</option>
       </select>
     </div>
     <div class="form-row">
-      <label for="proc-sfm">SfM 工具</label>
+      <label for="proc-sfm">sfm-tool / SfM工具</label>
       <select id="proc-sfm" name="sfm_tool">
         <option value="any">any (自动)</option>
         <option value="colmap">colmap</option>
@@ -48,44 +51,45 @@
       </select>
     </div>
     <div class="form-row">
-      <label>GPU</label>
-      <label class="switch-label"><input type="checkbox" name="gpu" value="true" checked> 启用 GPU</label>
+      <label>gpu / GPU</label>
+      <label class="switch-label"><input type="checkbox" name="gpu" value="true" checked> 启用</label>
     </div>
   </fieldset>
 
-  <!-- 高级参数 -->
   <fieldset>
-    <legend class="collapsible" data-target="proc-advanced">⚙ 高级参数 ▾</legend>
+    <legend class="collapsible" data-target="proc-advanced">⚙ advanced / 高级参数 ▾</legend>
     <div id="proc-advanced" class="collapsed">
       <div class="form-row">
-        <label for="proc-downscale">降采样次数</label>
-        <input id="proc-downscale" name="num_downscales" type="number" min="0" max="5" placeholder="默认自动">
+        <label for="proc-downscale">num-downscales / 降采样次数</label>
+        <input id="proc-downscale" name="num_downscales" type="number" min="0" max="5" placeholder="默认 3">
       </div>
       <div class="form-row">
-        <label for="proc-maxsize">最大图像数</label>
+        <label for="proc-maxsize">max-dataset-size / 最大图像数</label>
         <input id="proc-maxsize" name="max_dataset_size" type="number" min="1" placeholder="不限">
       </div>
       <div class="form-row">
-        <label for="proc-crop">裁剪比例</label>
-        <input id="proc-crop" name="crop_factor" type="text" placeholder="0.0 0.0 0.0 0.0 (top bottom left right)">
+        <label for="proc-crop">crop-factor / 裁剪 (top bottom left right)</label>
+        <input id="proc-crop" name="crop_factor" type="text" placeholder="0.0 0.0 0.0 0.0">
+      </div>
+      <div class="form-row">
+        <label for="proc-cropb">crop-bottom / 底部裁剪</label>
+        <input id="proc-cropb" name="crop_bottom" type="number" step="0.01" min="0" max="1" placeholder="0.0">
       </div>
       <div class="form-row hloc-only">
-        <label for="proc-feature">特征类型 (hloc)</label>
+        <label for="proc-feature">feature-type / 特征类型</label>
         <select id="proc-feature" name="feature_type">
-          <option value="">默认</option>
+          <option value="">默认 any</option>
           <option value="superpoint_aachen">superpoint_aachen</option>
           <option value="superpoint_max">superpoint_max</option>
-          <option value="superpoint_inloc">superpoint_inloc</option>
           <option value="r2d2">r2d2</option>
           <option value="d2net-ss">d2net-ss</option>
-          <option value="sosnet">sosnet</option>
           <option value="disk">disk</option>
         </select>
       </div>
       <div class="form-row hloc-only">
-        <label for="proc-matcher">匹配器 (hloc)</label>
+        <label for="proc-matcher">matcher-type / 匹配器</label>
         <select id="proc-matcher" name="matcher_type">
-          <option value="">默认</option>
+          <option value="">默认 any</option>
           <option value="superglue">superglue</option>
           <option value="superglue-fast">superglue-fast</option>
           <option value="disk+lightglue">disk+lightglue</option>
@@ -93,36 +97,52 @@
         </select>
       </div>
       <div class="form-row hloc-only">
-        <label>Pixel-Perfect SfM</label>
+        <label>refine-pixsfm / 像素级精化</label>
         <label class="switch-label"><input type="checkbox" name="refine_pixsfm" value="true"> 启用</label>
       </div>
       <div class="form-row">
-        <label>精化内参</label>
+        <label>refine-intrinsics / 精化内参</label>
         <label class="switch-label"><input type="checkbox" name="refine_intrinsics" value="true" checked> 启用</label>
       </div>
       <div class="form-row">
-        <label>SfM 深度图</label>
+        <label>use-sfm-depth / SfM深度图</label>
         <label class="switch-label"><input type="checkbox" name="use_sfm_depth" value="true"> 启用</label>
       </div>
       <div class="form-row">
-        <label>跳过 COLMAP</label>
+        <label>include-depth-debug / 深度调试图</label>
+        <label class="switch-label"><input type="checkbox" name="include_depth_debug" value="true"> 启用</label>
+      </div>
+      <div class="form-row">
+        <label>use-single-camera-mode / 单相机模式</label>
+        <label class="switch-label"><input type="checkbox" name="use_single_camera_mode" value="true" checked> 启用</label>
+      </div>
+      <div class="form-row">
+        <label>skip-colmap / 跳过COLMAP</label>
         <label class="switch-label"><input type="checkbox" name="skip_colmap" value="true"> 启用</label>
+      </div>
+      <div class="form-row">
+        <label for="proc-cmap">colmap-model-path / COLMAP路径</label>
+        <input id="proc-cmap" name="colmap_model_path" type="text" placeholder="colmap\sparse\0">
+      </div>
+      <div class="form-row">
+        <label for="proc-ieq">images-per-equirect / 全景采样</label>
+        <input id="proc-ieq" name="images_per_equirect" type="number" min="8" max="14" placeholder="8" step="6">
       </div>
       <!-- video 专属 -->
       <div class="form-row video-only">
-        <label for="proc-fps">每秒抽帧数</label>
-        <input id="proc-fps" name="num_frames_per_second" type="number" min="0.1" step="0.1" placeholder="默认 1">
+        <label for="proc-fps">num-frames-per-second / 每秒抽帧</label>
+        <input id="proc-fps" name="num_frames_per_second" type="number" min="0.1" step="0.1" placeholder="1">
       </div>
       <div class="form-row video-only">
-        <label for="proc-start">起始帧</label>
+        <label for="proc-start">start-frame / 起始帧</label>
         <input id="proc-start" name="start_frame" type="number" min="0" placeholder="0">
       </div>
       <div class="form-row video-only">
-        <label for="proc-end">结束帧</label>
+        <label for="proc-end">end-frame / 结束帧</label>
         <input id="proc-end" name="end_frame" type="number" min="0" placeholder="末尾">
       </div>
     </div>
   </fieldset>
 
-  <button type="submit" class="btn-run">▶ 开始预处理</button>
+  <button type="submit" class="btn-run">▶ 开始预处理 / Start Process</button>
 </form>

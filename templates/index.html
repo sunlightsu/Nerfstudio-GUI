@@ -11,27 +11,33 @@
 <header class="header">
   <h1>🧊 Nerfstudio GUI</h1>
   <nav class="tabs">
-    <button class="tab active" data-tab="step1">📷 图像预处理</button>
-    <button class="tab" data-tab="step2">🚂 训练</button>
-    <button class="tab" data-tab="step3">📦 导出</button>
+    <button class="tab active" data-tab="step1">📷 预处理 / Process</button>
+    <button class="tab" data-tab="step2">🚂 训练 / Train</button>
+    <button class="tab" data-tab="step3">📦 导出 / Export</button>
+    <button class="tab" data-tab="step4">📁 浏览 / Browse</button>
   </nav>
 </header>
 
-<main class="panels">
-  <section id="panel-step1" class="panel active">
-    {% include 'steps/step1_process.html' %}
-  </section>
-  <section id="panel-step2" class="panel">
-    {% include 'steps/step2_train.html' %}
-  </section>
-  <section id="panel-step3" class="panel">
-    {% include 'steps/step3_export.html' %}
-  </section>
-</main>
-
-<section class="terminal-section">
-  {% include 'terminal.html' %}
-</section>
+<div class="main-layout">
+  <div class="left-panel">
+    <section id="panel-step1" class="panel active">
+      {% include 'steps/step1_process.html' %}
+    </section>
+    <section id="panel-step2" class="panel">
+      {% include 'steps/step2_train.html' %}
+    </section>
+    <section id="panel-step3" class="panel">
+      {% include 'steps/step3_export.html' %}
+    </section>
+    <section id="panel-step4" class="panel">
+      {% include 'steps/step4_browse.html' %}
+    </section>    <section id="panel-step4" class="panel">
+      {% include 'steps/step4_browse.html' %}
+    </section>  </div>
+  <div class="right-panel">
+    {% include 'terminal.html' %}
+  </div>
+</div>
 
 <script src="/static/app.js"></script>
 </body>
