@@ -22,7 +22,8 @@ Configure pipelines step-by-step in your browser — no more typing long CLI com
 | 💻 **Command Preview** | Fill in the left panel → see the assembled CLI command on the right. Edit it directly before execution |
 | 📌 **Path Bookmarks** | Save frequently-used paths and reuse them across all tabs |
 
-![Screenshot](display.png)
+<img width="3796" height="1965" alt="dispaly" src="https://github.com/user-attachments/assets/1049f739-c410-41ca-b4db-5574188f6cf9" />
+
 
 ---
 
