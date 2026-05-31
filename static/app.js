@@ -41,7 +41,7 @@ dataTypeRadios.forEach(function (r) {
   r.addEventListener('change', function () {
     var isVideo = r.value === 'video';
     document.querySelectorAll('.video-only').forEach(function (e) {
-      e.classList.toggle('hidden', isVideo);
+      e.classList.toggle('hidden', !isVideo);
     });
   });
 });
@@ -50,7 +50,7 @@ var sfmSelect = document.getElementById('proc-sfm');
 sfmSelect.addEventListener('change', function () {
   var isHloc = this.value === 'hloc';
   document.querySelectorAll('.hloc-only').forEach(function (e) {
-    e.classList.toggle('hidden', isHloc);
+    e.classList.toggle('hidden', !isHloc);
   });
 });
 
@@ -63,8 +63,9 @@ function applyMethodVisibility() {
   var isGS = mSel.value.startsWith('splatfacto');
   document.querySelectorAll('.nerf-only,.gs-only').forEach(function (e) {
     var belongsToGS = e.classList.contains('gs-only');
-    // nerfacto 时隐藏 gs-only，splatfacto 时隐藏 nerf-only
-    var hide = isGS ? !belongsToGS : belongsToGS;
+    // gs-only 元素：splatfacto 时显示，nerfacto 时隐藏
+    // nerf-only 元素：splatfacto 时隐藏，nerfacto 时显示
+    var hide = belongsToGS ? !isGS : isGS;
     e.classList.toggle('hidden', hide);
   });
 }
