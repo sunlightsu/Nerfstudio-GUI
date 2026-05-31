@@ -436,6 +436,22 @@ async def api_export(req: ExportRequest):
     return StreamingResponse(sse_stream(cmd), media_type="text/event-stream")
 
 
+@app.post("/api/preview")
+async def api_preview(request: Request):
+    """仅预览命令，不执行。根据请求体中的 _type 字段路由到对应 builder。"""
+    body = await request.json()
+    ptype = body.pop("_type", "train")
+    if ptype == "process":
+        req_obj = ProcessRequest(**body)
+        return {"cmd": build_process_cmd(req_obj)}
+    elif ptype == "export":
+        req_obj = ExportRequest(**body)
+        return {"cmd": build_export_cmd(req_obj)}
+    else:
+        req_obj = TrainRequest(**body)
+        return {"cmd": build_train_cmd(req_obj)}
+
+
 @app.get("/api/browse")
 async def api_browse(path: str = Query(default="E:\\")):
     """浏览文件系统，返回目录下的文件夹列表。"""

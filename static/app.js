@@ -550,4 +550,76 @@ document.getElementById('form-step3')
     runCmd('/api/export', collectForm(e.target));
   });
 
+// ================================================================
+//  命令预览 — 左侧参数变化时实时向 /api/preview 获取命令
+// ================================================================
+var cmdPreview = document.getElementById('cmd-preview');
+var previewTimer = null;
+var currentPreviewType = 'train';
+
+function getPreviewType() {
+  var activePanel = document.querySelector('.panel.active');
+  if (!activePanel) return 'train';
+  if (activePanel.id === 'panel-step1') return 'process';
+  if (activePanel.id === 'panel-step2') return 'train';
+  if (activePanel.id === 'panel-step3') return 'export';
+  return 'train';
+}
+
+async function updatePreview() {
+  currentPreviewType = getPreviewType();
+  var form = document.querySelector('.panel.active form');
+  if (!form) return;
+
+  var data = collectForm(form);
+  data._type = currentPreviewType;
+  if (currentPreviewType === 'process') {
+    data.data_type = document.querySelector(
+      'input[name="data_type"]:checked'
+    ).value;
+  }
+
+  try {
+    var r = await fetch('/api/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (r.ok) {
+      var d = await r.json();
+      cmdPreview.value = d.cmd || '';
+    }
+  } catch (e) {
+    // 预览失败静默
+  }
+}
+
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 250);
+}
+
+document.querySelectorAll('.panel form').forEach(function (form) {
+  form.addEventListener('input', schedulePreview);
+  form.addEventListener('change', schedulePreview);
+});
+
+document.querySelectorAll('.tab').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    setTimeout(updatePreview, 150);
+  });
+});
+
+setTimeout(updatePreview, 600);
+
+// 执行时使用预览区中用户编辑后的命令
+var originalRunCmd = runCmd;
+runCmd = function (endpoint, data) {
+  var userCmd = cmdPreview.value.trim();
+  if (userCmd) {
+    lastCmd = userCmd;
+  }
+  return originalRunCmd(endpoint, data);
+};
+
 })();
