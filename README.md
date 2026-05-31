@@ -1,3 +1,4 @@
+<img width="3796" height="1965" alt="dispaly" src="https://github.com/user-attachments/assets/5c7a8974-8aec-46b9-ae91-aad1e7ce008d" />
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -22,7 +23,8 @@ Configure pipelines step-by-step in your browser — no more typing long CLI com
 | 💻 **Command Preview** | Fill in the left panel → see the assembled CLI command on the right. Edit it directly before execution |
 | 📌 **Path Bookmarks** | Save frequently-used paths and reuse them across all tabs |
 
-![Screenshot](display.png)
+<img width="3796" height="1965" alt="dispaly" src="https://github.com/user-attachments/assets/1049f739-c410-41ca-b4db-5574188f6cf9" />
+
 
 ---
 
