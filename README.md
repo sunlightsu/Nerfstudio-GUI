@@ -1,10 +1,125 @@
-# 🧊 Nerfstudio GUI
-
-> 一个基于 Web 的 [Nerfstudio](https://docs.nerf.studio/) 操作面板，分步可视化操控命令行，告别手敲参数。
-
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+# 🧊 Nerfstudio GUI
+
+**A Web-based control panel for [Nerfstudio](https://docs.nerf.studio/).**
+Configure pipelines step-by-step in your browser — no more typing long CLI commands by hand.
+
+*[中文介绍 →](#中文介绍)*
+
+---
+
+## ✨ Features
+
+| Tab | What it does |
+|-----|-------------|
+| 📷 **Process** | Run `ns-process-data` (images / video) with all camera model, SfM tool, and COLMAP options |
+| 🚂 **Train** | Full support for **nerfacto** & **splatfacto**. VRAM presets (6/8/12 GB). Parameters are automatically isolated per method — no NeRF params leaking into 3DGS |
+| 📦 **Export** | 6 export methods (poisson / tsdf / pointcloud / gaussian-splat / marching-cubes / cameras), each with its own parameter group |
+| 📁 **Browse** | Explore your local filesystem right in the browser. Bookmark folders with one click |
+| 💻 **Command Preview** | Fill in the left panel → see the assembled CLI command on the right. Edit it directly before execution |
+| 📌 **Path Bookmarks** | Save frequently-used paths and reuse them across all tabs |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Windows (Linux/macOS: just tweak `start.bat`)
+- [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or Anaconda
+- A conda environment with [Nerfstudio](https://docs.nerf.studio/quickstart/installation.html) installed (default name `nerfstudio`)
+- Python 3.10+
+
+### Installation
+
+```bash
+git clone https://github.com/YOUR_USERNAME/nerfstudio-gui.git
+cd nerfstudio-gui
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Run
+
+```bash
+.venv\Scripts\python.exe app.py
+```
+
+Open `http://localhost:8000`. API docs at `http://localhost:8000/docs`.
+
+---
+
+## 🧱 Project Structure
+
+```
+nerfstudio-gui/
+├── app.py                        # FastAPI backend — routes, models, cmd builders, SSE
+├── requirements.txt              # Python dependencies
+├── start.bat                     # One-click launcher
+├── saved_paths.json              # Persisted path bookmarks
+├── templates/
+│   ├── index.html                # Two-column layout
+│   ├── terminal.html             # Terminal output + command preview
+│   └── steps/
+│       ├── step1_process.html    # Preprocessing form
+│       ├── step2_train.html      # Training form (nerfacto / splatfacto)
+│       ├── step3_export.html     # Export form
+│       └── step4_browse.html     # File browser + bookmark manager
+├── static/
+│   ├── style.css                 # Dark theme
+│   └── app.js                    # Frontend logic
+└── --help文档/                   # CLI reference docs
+```
+
+---
+
+## 🔧 Architecture
+
+```
+Browser → POST JSON → FastAPI
+  → Pydantic validation → build_*_cmd()
+  → async subprocess (conda activate + ns-*)
+  → SSE stream → Browser terminal (real-time)
+```
+
+- **Method-aware params** — `build_train_cmd` branches on `r.method` to isolate NeRF vs 3DGS
+- **RAF terminal** — `requestAnimationFrame` batches DOM writes to prevent freeze during training
+- **Class-based visibility** — `.hidden` + `classList`, no inline style pollution
+- **`PYTHONIOENCODING=utf-8`** — fixes Windows GBK/emoji crash
+
+---
+
+## 📄 License
+
+MIT. Acknowledgments: [Nerfstudio](https://github.com/nerfstudio-project/nerfstudio), [FastAPI](https://fastapi.tiangolo.com/).
+
+---
+
+## 中文介绍
+
+## 🧊 Nerfstudio GUI
+
+一个基于 Web 的 Nerfstudio 操作面板，分步可视化操控命令行。
+
+| 模块 | 说明 |
+|------|------|
+| 📷 图像预处理 | `ns-process-data` 在线配置 |
+| 🚂 训练 | nerfacto / splatfacto，显存预设，参数自动隔离 |
+| 📦 导出 | 6 种导出方式，各方式专属参数 |
+| 📁 文件浏览 | 网页内浏览文件夹，一键书签 |
+| 💻 命令预览 | 填参数 → 实时显示命令行，可直接编辑 |
+| 📌 路径书签 | 常用路径一键填入 |
+
+```bash
+git clone https://github.com/YOUR_USERNAME/nerfstudio-gui.git
+cd nerfstudio-gui && python -m venv .venv
+.venv\Scripts\activate && pip install -r requirements.txt
+python app.py  # → http://localhost:8000
+```
 
 ---
 
