@@ -200,173 +200,101 @@ def _add_params(parts: list[str], pairs: list[tuple[str, object]], *, bool_as_fl
 
 
 def build_process_cmd(r: ProcessRequest) -> str:
-    parts = [
-        f"ns-process-data {r.data_type}",
-        _opt("data", r.data, quote=True),
-        _opt("output-dir", r.output_dir, quote=True),
-        _opt("camera-type", r.camera_type),
-        _opt("matching-method", r.matching_method),
-        _opt("sfm-tool", r.sfm_tool),
-        _opt("gpu", r.gpu),
-    ]
-    _add_params(parts, [
-        ("num-downscales", r.num_downscales),
-        ("max-dataset-size", r.max_dataset_size),
-        ("crop-factor", r.crop_factor),
-        ("crop-bottom", r.crop_bottom),
-        ("feature-type", r.feature_type),
-        ("matcher-type", r.matcher_type),
-        ("refine-pixsfm", r.refine_pixsfm),
-        ("refine-intrinsics", r.refine_intrinsics),
-        ("use-sfm-depth", r.use_sfm_depth),
-        ("include-depth-debug", r.include_depth_debug),
-        ("same-dimensions", r.same_dimensions),
-        ("use-single-camera-mode", r.use_single_camera_mode),
-        ("percent-radius-crop", r.percent_radius_crop),
-        ("verbose", r.verbose),
-        ("skip-colmap", r.skip_colmap),
-        ("skip-image-processing", r.skip_image_processing),
-        ("colmap-model-path", r.colmap_model_path),
-        ("colmap-cmd", r.colmap_cmd),
-        ("images-per-equirect", r.images_per_equirect),
-        ("eval-data", r.eval_data),
-        ("num-frames-per-second", r.num_frames_per_second),
-        ("start-frame", r.start_frame),
-        ("end-frame", r.end_frame),
-    ])
+    """数据驱动：从 methods.py 的 PROCESS_COMMON + PROCESS_OPTIONAL 构建命令。"""
+    parts = [f"ns-process-data {r.data_type}"]
+    # 公共必填
+    parts.append(_opt("data", r.data, quote=True))
+    parts.append(_opt("output-dir", r.output_dir, quote=True))
+    # 相机/SfM 公共
+    for cli_name, field_name, _type, default in PROCESS_COMMON:
+        val = getattr(r, field_name, None)
+        if val != default:
+            parts.append(_opt(cli_name, val))
+    # 可选参数
+    for cli_name, field_name, _type, default in PROCESS_OPTIONAL:
+        val = getattr(r, field_name, None)
+        if val is None or val == default:
+            continue
+        parts.append(_opt(cli_name, val))
     return " ".join(parts)
 
 
+from methods import METHODS, _COMMON, _MODEL_COMMON, PROCESS_COMMON, PROCESS_OPTIONAL, EXPORT_METHODS
+
+
 def build_train_cmd(r: TrainRequest) -> str:
-    parts = [
-        f"ns-train {r.method}",
-        _opt("data", r.data, quote=True),
-        _opt("output-dir", r.output_dir, quote=True),
-        _opt("experiment-name", r.experiment_name, quote=True),
-        _opt("max-num-iterations", r.max_num_iterations),
-        _opt("vis", r.vis),
-        _opt("mixed-precision", r.mixed_precision),
-        _opt("steps-per-save", r.steps_per_save if r.steps_per_save != 2000 else None),
-    ]
-    # pipeline.datamanager
-    dm_prefix = "pipeline.datamanager."
-    if r.method == "nerfacto":
-        _add_params(parts, [
-            (f"{dm_prefix}train-num-rays-per-batch", r.train_num_rays_per_batch),
-            (f"{dm_prefix}cache-images-type", r.cache_images_type),
-            (f"{dm_prefix}camera-res-scale-factor", r.camera_res_scale_factor),
-        ])
-    elif r.method == "splatfacto":
-        _add_params(parts, [
-            (f"{dm_prefix}cache-images-type", r.cache_images_type),
-            (f"{dm_prefix}camera-res-scale-factor", r.camera_res_scale_factor),
-        ])
-    # pipeline.model — nerfacto 专属
-    mdl_prefix = "pipeline.model."
-    if r.method == "nerfacto":
-        _add_params(parts, [
-            (f"{mdl_prefix}num-nerf-samples-per-ray", r.num_nerf_samples_per_ray),
-            (f"{mdl_prefix}num-proposal-samples-per-ray", r.num_proposal_samples_per_ray),
-            (f"{mdl_prefix}max-res", r.max_res),
-            (f"{mdl_prefix}log2-hashmap-size", r.log2_hashmap_size),
-            (f"{mdl_prefix}num-levels", r.num_levels),
-            (f"{mdl_prefix}hidden-dim", r.hidden_dim),
-            (f"{mdl_prefix}hidden-dim-color", r.hidden_dim_color),
-            (f"{mdl_prefix}near-plane", r.near_plane),
-            (f"{mdl_prefix}far-plane", r.far_plane),
-        ])
-    # pipeline.model — 公共参数
-    parts.append(_opt(f"{mdl_prefix}background-color", r.background_color))
-    if r.camera_optimizer_mode is not None:
-        parts.append(_opt(f"{mdl_prefix}camera-optimizer.mode", r.camera_optimizer_mode))
-    # splatfacto 专属
-    if r.method == "splatfacto":
-        _add_params(parts, [
-            (f"{mdl_prefix}sh-degree", r.sh_degree),
-            (f"{mdl_prefix}cull-alpha-thresh", r.cull_alpha_thresh),
-            (f"{mdl_prefix}densify-grad-thresh", r.densify_grad_thresh),
-            (f"{mdl_prefix}ssim-lambda", r.ssim_lambda),
-            (f"{mdl_prefix}refine-every", r.refine_every),
-            (f"{mdl_prefix}random-init", r.random_init),
-        ])
+    """数据驱动：从 methods.py 的注册表中读取参数映射，自动构建命令。"""
+    cfg = METHODS.get(r.method, {})
+    parts = [f"ns-train {r.method}"]
+
+    # 公共顶层参数（对所有方法生效）
+    for cli_name, field_name, _type, default in _COMMON:
+        val = getattr(r, field_name, None)
+        if val is None or val == default:
+            continue
+        parts.append(_opt(cli_name, val, quote=(_type is str and cli_name in ("data", "output-dir", "experiment-name"))))
+
+    # pipeline.datamanager（方法专属）
+    for cli_name, field_name, _type, default in cfg.get("datamanager", []):
+        val = getattr(r, field_name, None)
+        if val is None or val == default:
+            continue
+        parts.append(_opt(f"pipeline.datamanager.{cli_name}", val))
+
+    # pipeline.model — 方法专属
+    for cli_name, field_name, _type, default in cfg.get("model", []):
+        val = getattr(r, field_name, None)
+        if val is None or val == default:
+            continue
+        parts.append(_opt(f"pipeline.model.{cli_name}", val))
+
+    # pipeline.model — 公共参数（background-color, camera-optimizer.mode）
+    for cli_name, field_name, _type, default in _MODEL_COMMON:
+        val = getattr(r, field_name, None)
+        if val is None or val == default:
+            continue
+        parts.append(_opt(f"pipeline.model.{cli_name}", val))
+
     return " ".join(parts)
 
 
 def build_export_cmd(r: ExportRequest) -> str:
+    """数据驱动：从 methods.py 的 EXPORT_METHODS 注册表构建导出命令。"""
     parts = [
         f"ns-export {r.export_method}",
         _opt("load-config", r.load_config, quote=True),
         _opt("output-dir", r.output_dir, quote=True),
     ]
-    # 共享参数组（按 CLI 标志名 → 请求字段）
-    _pc_base = [
-        ("num-points", r.num_points),
-        ("remove-outliers", r.remove_outliers),
-        ("reorient-normals", r.reorient_normals),
-        ("normal-method", r.normal_method),
-        ("normal-output-name", r.normal_output_name),
-        ("depth-output-name", r.depth_output_name),
-        ("rgb-output-name", r.rgb_output_name),
-    ]
-    _obb = [
-        ("obb-center", r.obb_center),
-        ("obb-rotation", r.obb_rotation),
-        ("obb-scale", r.obb_scale),
-    ]
-    _perf = [
-        ("num-rays-per-batch", r.num_rays_per_batch),
-        ("std-ratio", r.std_ratio),
-    ]
-    _mesh_tex = [
-        ("texture-method", r.texture_method),
-        ("target-num-faces", r.target_num_faces),
-        ("num-pixels-per-side", r.num_pixels_per_side),
-    ]
-    _bbox = [
-        ("bounding-box-min", r.bounding_box_min),
-        ("bounding-box-max", r.bounding_box_max),
-    ]
-
-    method_params: dict[str, list[tuple[str, object]]] = {
-        "poisson": _pc_base + _obb + _perf + _mesh_tex + [
-            ("save-point-cloud", r.save_point_cloud),
-            ("px-per-uv-triangle", r.px_per_uv_triangle),
-            ("unwrap-method", r.unwrap_method),
-        ],
-        "pointcloud": _pc_base + _obb + _perf + [
-            ("save-world-frame", r.save_world_frame),
-        ],
-        "tsdf": [
-            ("downscale-factor", r.downscale_factor),
-            ("resolution", r.resolution),
-            ("batch-size", r.batch_size),
-        ] + _bbox + _mesh_tex,
-        "gaussian-splat": [
-            ("output-filename", r.output_filename),
-            ("ply-color-mode", r.ply_color_mode),
-        ] + _obb,
-        "marching-cubes": [
-            ("resolution", r.resolution),
-            ("isosurface-threshold", r.isosurface_threshold),
-            ("simplify-mesh", r.simplify_mesh),
-        ] + _bbox + _mesh_tex,
-        "cameras": [],
-    }
-    _add_params(parts, method_params.get(r.export_method, []), bool_as_flag=False)
+    cfg = EXPORT_METHODS.get(r.export_method, {})
+    for cli_name, field_name, _type, default in cfg.get("params", []):
+        val = getattr(r, field_name, None)
+        if val is None or val == default:
+            continue
+        parts.append(_opt(cli_name, val, bool_as_flag=False))
     return " ".join(parts)
 
 
 # ── Shell 执行器 ─────────────────────────────────────────────────
 
-async def run_in_conda(cmd: str) -> AsyncGenerator[str, None]:
-    """在 conda nerfstudio 环境中执行命令，逐行 yield 输出。"""
+async def run_in_conda(cmd: str, timeout: float = 3600) -> AsyncGenerator[str, None]:
+    """在 conda nerfstudio 环境中执行命令，逐行 yield 输出。
+
+    timeout: 超时秒数（默认 3600 = 1小时），超时后发送错误并终止。"""
     full_cmd = f'cmd /c "conda activate {CONDA_ENV} && {cmd}"'
-    proc = await asyncio.create_subprocess_shell(
-        full_cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT,
-        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
-    )
+    try:
+        proc = await asyncio.wait_for(
+            asyncio.create_subprocess_shell(
+                full_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+            ),
+            timeout=timeout,
+        )
+    except asyncio.TimeoutError:
+        yield "__EXIT_CODE__:-1\n"
+        return
+
     if proc.stdout is None:
         yield "__EXIT_CODE__:-1\n"
         return
@@ -417,7 +345,11 @@ async def api_preview(request: Request):
         "process": (ProcessRequest, build_process_cmd),
         "export": (ExportRequest, build_export_cmd),
     }.get(ptype, (TrainRequest, build_train_cmd))
-    return {"cmd": builder(model_cls(**body))}
+    try:
+        return {"cmd": builder(model_cls(**body))}
+    except Exception:
+        # 必填字段缺失（如 load_config/output_dir 未填）时返回空预览
+        return {"cmd": f"ns-{ptype} ..."}
 
 
 @app.get("/api/browse")
